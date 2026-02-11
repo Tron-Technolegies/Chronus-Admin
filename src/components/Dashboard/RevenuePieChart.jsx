@@ -8,14 +8,12 @@ const data = [
   { name: "Garden", value: 200 },
 ];
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+const COLORS = ["#e0e0e0", "#FFC107", "gray", "black"];
 
 const RevenuePieChart = () => {
   return (
     <div className="col-span-12 rounded-lg border border-gray-200 bg-white p-6 shadow-sm xl:col-span-4">
-      <h3 className="mb-4 text-lg font-semibold text-gray-800">
-        Revenue by Category
-      </h3>
+      <h3 className="mb-4 text-lg font-semibold text-gray-800">Revenue by Category</h3>
       <div className="h-[350px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -30,10 +28,7 @@ const RevenuePieChart = () => {
               dataKey="value"
             >
               {data.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip />

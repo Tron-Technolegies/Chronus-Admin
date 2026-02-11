@@ -13,7 +13,6 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
               e.stopPropagation();
               setSidebarOpen(!sidebarOpen);
             }}
-            className="z-99999 block rounded-sm border border-stroke bg-white p-1.5 shadow-sm lg:hidden"
           >
             <BsList size={24} />
           </button>
@@ -51,16 +50,14 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
           <div className="relative">
             <div className="flex items-center gap-4">
               <span className="hidden text-right lg:block">
-                <span className="block text-sm font-medium text-black">
-                  Thomas Anree
-                </span>
+                <span className="block text-sm font-medium text-black">Thomas Anree</span>
                 <span className="block text-xs">UX Designer</span>
               </span>
 
               <span className="h-12 w-12 rounded-full overflow-hidden">
-                <img 
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" 
-                    alt="User" 
+                <img
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  alt="User"
                 />
               </span>
             </div>
