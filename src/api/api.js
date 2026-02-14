@@ -42,3 +42,17 @@ export const updateProductNew = (id, data) => API.put(`/update_product/${id}/`, 
     headers: { "Content-Type": "multipart/form-data" },
 });
 export const deleteProductNew = (id) => API.delete(`/delete_product/${id}/`);
+
+// --- Orders ---
+export const getOrders = () => API.get("/view_orders/");
+export const updateOrderStatus = (id, data) => API.put(`/update_order/${id}/`, data);
+
+// --- Coupons ---
+export const getCoupons = () => API.get("/view_coupons/");
+export const addCoupon = (data) => API.post("/add_coupon/", data);
+export const updateCoupon = (id, data) => API.put(`/update_coupon/${id}/`, data);
+export const deleteCoupon = (id) => API.delete(`/delete_coupon/${id}/`);
+
+// --- Customers ---
+export const getCustomers = () => API.get("/view_customers/");
+export const deleteCustomer = (id) => API.delete(`/delete_customer/${id}/`);

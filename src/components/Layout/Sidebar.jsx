@@ -18,7 +18,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: "Orders", path: "/orders", icon: BsCart3 },
     { name: "Customers", path: "/customers", icon: BsPeople },
     { name: "Coupons", path: "/coupon", icon: IoTicketOutline },
-    { name: "Settings", path: "/settings", icon: BsGear },
+    // { name: "Settings", path: "/settings", icon: BsGear },
   ];
 
   return (
