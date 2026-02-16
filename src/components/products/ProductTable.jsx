@@ -10,7 +10,7 @@ import {
   Button,
   Chip,
   Avatar,
-  Box
+  Box,
 } from "@mui/material";
 
 import toast from "react-hot-toast";
@@ -26,7 +26,7 @@ export default function ProductTable({ onEdit }) {
   const fetchProducts = async () => {
     try {
       const res = await getProductsView();
-      setRows(res.data);
+      setRows(res.data.products);
     } catch (error) {
       toast.error("Failed to fetch products");
     } finally {
@@ -71,14 +71,21 @@ export default function ProductTable({ onEdit }) {
             {rows.map((row) => (
               <TableRow key={row.id}>
                 <TableCell>
-                    {row.image && (
-                        <Avatar src={row.image} variant="rounded" />
-                    )}
+                  {row.image ? (
+                    <Avatar src={row.image} variant="rounded" sx={{ width: 50, height: 50 }} />
+                  ) : (
+                    "-"
+                  )}
                 </TableCell>
+
                 <TableCell>{row.name}</TableCell>
-                <TableCell align="right">{row.category}</TableCell> 
-                <TableCell align="right">{row.brand}</TableCell>
-                <TableCell align="right">₹{row.price}</TableCell>
+
+                <TableCell align="right">{row.category ? row.category.name : "-"}</TableCell>
+
+                <TableCell align="right">{row.brand ? row.brand.name : "-"}</TableCell>
+
+                <TableCell align="right">${row.price}</TableCell>
+
                 <TableCell align="right">
                   <Chip
                     label={row.stock > 0 ? `${row.stock} in stock` : "Out of Stock"}

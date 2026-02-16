@@ -23,7 +23,7 @@ export default function CategoriesTable({ onEdit }) {
   const fetchCategories = async () => {
     try {
       const res = await getCategories();
-      setRows(res.data);
+      setRows(res.data.categories);
     } catch (error) {
       toast.error("Failed to fetch categories");
     } finally {

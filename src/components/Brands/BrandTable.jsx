@@ -23,7 +23,7 @@ export default function BrandTable({ onEdit }) {
   const fetchBrands = async () => {
     try {
       const res = await getBrands();
-      setRows(res.data);
+      setRows(res.data.brands);
     } catch (error) {
       toast.error("Failed to fetch brands");
     } finally {

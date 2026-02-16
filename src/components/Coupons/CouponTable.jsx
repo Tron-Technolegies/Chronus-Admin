@@ -23,7 +23,7 @@ export default function CouponTable({ onEdit }) {
   const fetchCoupons = async () => {
     try {
       const res = await getCoupons();
-      setRows(res.data);
+      setRows(res.data.coupons);
     } catch (error) {
       toast.error("Failed to fetch coupons");
     } finally {
