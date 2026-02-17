@@ -7,14 +7,18 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button,
+  IconButton,
   Chip,
   Avatar,
   Box,
+  TextField,
+  InputAdornment,
+  Tooltip,
 } from "@mui/material";
+import { FiEdit, FiTrash2, FiSearch } from "react-icons/fi";
 
 import toast from "react-hot-toast";
-import { deleteProductNew, getProductsView } from "../../api/api";
+import { deleteProductNew, getProductsView, BASE_URL } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
 
@@ -22,6 +26,7 @@ export default function ProductTable({ onEdit }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
+  const [search, setSearch] = useState("");
 
   const fetchProducts = async () => {
     try {
@@ -49,72 +54,126 @@ export default function ProductTable({ onEdit }) {
     }
   };
 
+  // Filter logic
+  const filteredRows = rows.filter((row) => {
+    return (
+      search === "" ||
+      row.name.toLowerCase().includes(search.toLowerCase()) ||
+      (row.category && row.category.name.toLowerCase().includes(search.toLowerCase())) ||
+      (row.brand && row.brand.name.toLowerCase().includes(search.toLowerCase()))
+    );
+  });
+
   if (loading) return <Loader />;
 
   return (
     <>
-      <TableContainer component={Paper}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+        <TextField
+          size="small"
+          placeholder="Search products..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          sx={{
+            width: 300,
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "8px",
+              backgroundColor: "white",
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <FiSearch className="text-gray-400" />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
+
+      <TableContainer component={Paper} sx={{ borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         <Table sx={{ minWidth: 650 }}>
-          <TableHead>
+          <TableHead sx={{ bgcolor: "#f8fafc" }}>
             <TableRow>
-              <TableCell>Image</TableCell>
-              <TableCell>Product</TableCell>
-              <TableCell align="right">Category</TableCell>
-              <TableCell align="right">Brand</TableCell>
-              <TableCell align="right">Price</TableCell>
-              <TableCell align="right">Stock</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Product</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>Category</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>Brand</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>Price</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>Stock</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell>
-                  {row.image ? (
-                    <Avatar src={row.image} variant="rounded" sx={{ width: 50, height: 50 }} />
-                  ) : (
-                    "-"
-                  )}
-                </TableCell>
+            {filteredRows.length > 0 ? (
+              filteredRows.map((row) => (
+                <TableRow key={row.id} hover>
+                  <TableCell>
+                    {row.image ? (
+                      <Avatar
+                        src={row.image.startsWith("http") ? row.image : `${BASE_URL}${row.image}`}
+                        variant="rounded"
+                        sx={{ width: 40, height: 40 }}
+                      />
+                    ) : (
+                      "-"
+                    )}
+                  </TableCell>
 
-                <TableCell>{row.name}</TableCell>
+                  <TableCell>
+                    <span className="font-medium text-gray-900">{row.name}</span>
+                  </TableCell>
 
-                <TableCell align="right">{row.category ? row.category.name : "-"}</TableCell>
+                  <TableCell align="right">{row.category ? row.category.name : "-"}</TableCell>
 
-                <TableCell align="right">{row.brand ? row.brand.name : "-"}</TableCell>
+                  <TableCell align="right">{row.brand ? row.brand.name : "-"}</TableCell>
 
-                <TableCell align="right">${row.price}</TableCell>
+                  <TableCell align="right">
+                    <span className="font-semibold text-gray-700">${row.price}</span>
+                  </TableCell>
 
-                <TableCell align="right">
-                  <Chip
-                    label={row.stock > 0 ? `${row.stock} in stock` : "Out of Stock"}
-                    color={row.stock > 0 ? "success" : "error"}
-                    size="small"
-                  />
-                </TableCell>
+                  <TableCell align="right">
+                    <Chip
+                      label={row.stock > 0 ? `${row.stock} in stock` : "Out of Stock"}
+                      color={row.stock > 0 ? "success" : "error"}
+                      size="small"
+                      variant={row.stock > 0 ? "filled" : "outlined"}
+                    />
+                  </TableCell>
 
-                <TableCell align="right">
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    sx={{ mr: 1 }}
-                    onClick={() => onEdit && onEdit(row)}
-                  >
-                    Edit
-                  </Button>
+                  <TableCell align="right">
+                    <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                      <Tooltip title="Edit Product">
+                        <IconButton
+                          size="small"
+                          onClick={() => onEdit && onEdit(row)}
+                          sx={{ color: "#0E45B7", bgcolor: "#eff6ff", "&:hover": { bgcolor: "#dbeafe" } }}
+                        >
+                          <FiEdit size={18} />
+                        </IconButton>
+                      </Tooltip>
 
-                  <Button
-                    variant="contained"
-                    size="small"
-                    color="error"
-                    onClick={() => setDeleteId(row.id)}
-                  >
-                    Delete
-                  </Button>
+                      <Tooltip title="Delete Product">
+                        <IconButton
+                          size="small"
+                          onClick={() => setDeleteId(row.id)}
+                          sx={{ color: "#ef4444", bgcolor: "#fef2f2", "&:hover": { bgcolor: "#fee2e2" } }}
+                        >
+                          <FiTrash2 size={18} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 6, color: "gray" }}>
+                  No products found
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </TableContainer>

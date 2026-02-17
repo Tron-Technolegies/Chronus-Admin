@@ -7,17 +7,21 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button,
+  IconButton,
   Avatar,
   Typography,
   Box,
+  TextField,
+  InputAdornment,
+  Tooltip,
 } from "@mui/material";
-import { TextField } from "@mui/material";
+import { FiSearch, FiTrash2 } from "react-icons/fi";
 
 import toast from "react-hot-toast";
 import { deleteCustomer, getCustomers } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
+
 export default function CustomerTable({ filters = {} }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -72,25 +76,38 @@ export default function CustomerTable({ filters = {} }) {
           placeholder="Search by username or email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          sx={{ width: 300 }}
+          sx={{
+            width: 300,
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "8px",
+              backgroundColor: "white",
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <FiSearch className="text-gray-400" />
+              </InputAdornment>
+            ),
+          }}
         />
       </Box>
 
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         <Table sx={{ minWidth: 650 }}>
-          <TableHead>
+          <TableHead sx={{ bgcolor: "#f8fafc" }}>
             <TableRow>
-              <TableCell>User</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Date Joined</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>User</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Date Joined</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {rows.length > 0 ? (
               rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow key={row.id} hover>
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                       <Avatar sx={{ bgcolor: "#3D1613" }}>
@@ -109,20 +126,21 @@ export default function CustomerTable({ filters = {} }) {
                   <TableCell>{row.email}</TableCell>
                   <TableCell>{new Date(row.date_joined).toLocaleDateString()}</TableCell>
                   <TableCell align="right">
-                    <Button
-                      variant="contained"
-                      size="small"
-                      color="error"
-                      onClick={() => setDeleteId(row.id)}
-                    >
-                      Delete
-                    </Button>
+                    <Tooltip title="Delete Customer">
+                      <IconButton
+                        size="small"
+                        onClick={() => setDeleteId(row.id)}
+                        sx={{ color: "#ef4444", bgcolor: "#fef2f2", "&:hover": { bgcolor: "#fee2e2" } }}
+                      >
+                        <FiTrash2 size={18} />
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={4} align="center">
+                <TableCell colSpan={4} align="center" sx={{ py: 6, color: "gray" }}>
                   No customers found
                 </TableCell>
               </TableRow>

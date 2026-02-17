@@ -7,8 +7,11 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button,
+  IconButton,
+  Tooltip,
+  Box,
 } from "@mui/material";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 
 import toast from "react-hot-toast";
 import { deleteCategory, getCategories } from "../../api/api";
@@ -66,23 +69,27 @@ export default function CategoriesTable({ onEdit }) {
                 <TableCell>{row.id}</TableCell>
                 <TableCell>{row.name}</TableCell>
                 <TableCell align="right">
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    sx={{ mr: 1 }}
-                    onClick={() => onEdit && onEdit(row)}
-                  >
-                    Edit
-                  </Button>
+                  <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                    <Tooltip title="Edit Category">
+                      <IconButton
+                        size="small"
+                        onClick={() => onEdit && onEdit(row)}
+                        sx={{ color: "#0E45B7", bgcolor: "#eff6ff", "&:hover": { bgcolor: "#dbeafe" } }}
+                      >
+                        <FiEdit size={18} />
+                      </IconButton>
+                    </Tooltip>
 
-                  <Button
-                    variant="contained"
-                    size="small"
-                    color="error"
-                    onClick={() => setDeleteId(row.id)}
-                  >
-                    Delete
-                  </Button>
+                    <Tooltip title="Delete Category">
+                      <IconButton
+                        size="small"
+                        onClick={() => setDeleteId(row.id)}
+                        sx={{ color: "#ef4444", bgcolor: "#fef2f2", "&:hover": { bgcolor: "#fee2e2" } }}
+                      >
+                        <FiTrash2 size={18} />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}
