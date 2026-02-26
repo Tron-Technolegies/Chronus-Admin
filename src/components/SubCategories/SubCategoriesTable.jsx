@@ -10,41 +10,40 @@ import {
   IconButton,
   Tooltip,
   Box,
-  Avatar,
 } from "@mui/material";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
-
 import toast from "react-hot-toast";
-import { deleteCategory, getCategories } from "../../api/api";
+import { deleteSubCategory, getSubCategories } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
 
-export default function CategoriesTable({ onEdit }) {
+export default function SubCategoriesTable({ onEdit }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
 
-  const fetchCategories = async () => {
+  const fetchSubCategories = async () => {
     try {
-      const res = await getCategories();
-      setRows(res.data.categories);
+      const res = await getSubCategories();
+      setRows(res.data.subcategories || res.data || []);
     } catch (error) {
-      toast.error("Failed to fetch categories");
+      toast.error("Failed to fetch sub categories");
+      setRows([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCategories();
+    fetchSubCategories();
   }, []);
 
   const handleDelete = async () => {
     try {
-      await deleteCategory(deleteId);
-      toast.success("Category deleted successfully");
+      await deleteSubCategory(deleteId);
+      toast.success("Sub Category deleted successfully");
       setDeleteId(null);
-      fetchCategories();
+      fetchSubCategories();
     } catch (error) {
       toast.error("Delete failed");
     }
@@ -58,9 +57,8 @@ export default function CategoriesTable({ onEdit }) {
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
-              <TableCell>Image</TableCell>
+              <TableCell>ID</TableCell>
               <TableCell>Name</TableCell>
-              <TableCell>Description</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -68,22 +66,11 @@ export default function CategoriesTable({ onEdit }) {
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.id}>
-                <TableCell>
-                  {row.image ? (
-                    <Avatar src={row.image} variant="rounded" sx={{ width: 40, height: 40 }} />
-                  ) : (
-                    <Avatar variant="rounded" sx={{ width: 40, height: 40, bgcolor: "#f0e6e6", color: "#3D1613", fontSize: 14 }}>
-                      {row.name?.[0]?.toUpperCase()}
-                    </Avatar>
-                  )}
-                </TableCell>
+                <TableCell>{row.id}</TableCell>
                 <TableCell>{row.name}</TableCell>
-                <TableCell sx={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {row.description || "-"}
-                </TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-                    <Tooltip title="Edit Category">
+                    <Tooltip title="Edit Sub Category">
                       <IconButton
                         size="small"
                         onClick={() => onEdit && onEdit(row)}
@@ -93,7 +80,7 @@ export default function CategoriesTable({ onEdit }) {
                       </IconButton>
                     </Tooltip>
 
-                    <Tooltip title="Delete Category">
+                    <Tooltip title="Delete Sub Category">
                       <IconButton
                         size="small"
                         onClick={() => setDeleteId(row.id)}
@@ -114,8 +101,8 @@ export default function CategoriesTable({ onEdit }) {
         open={Boolean(deleteId)}
         onClose={() => setDeleteId(null)}
         onConfirm={handleDelete}
-        title="Delete Category"
-        message="Are you sure you want to delete this category?"
+        title="Delete Sub Category"
+        message="Are you sure you want to delete this sub category?"
       />
     </>
   );

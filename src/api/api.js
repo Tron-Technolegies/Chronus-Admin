@@ -1,10 +1,11 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://127.0.0.1:8000/api/admin/",
+  baseURL: "http://3.28.58.78/api/admin/"
+  // baseURL: "http://127.0.0.1:8000/api/admin/",
 });
 
-export const BASE_URL = "http://127.0.0.1:8000";
+export const BASE_URL = "http://3.28.58.78/";
 
 // GET products
 export const getProducts = () => API.get("/products/");
@@ -18,7 +19,7 @@ export const updateProduct = (id, data) => API.put(`/products/${id}/`, data);
 // --- Categories ---
 export const getCategories = () => API.get("/view_categories/");
 export const addCategory = (data) => API.post("/add_category/", data);
-export const updateCategory = (id, data) => API.put(`/update_category/${id}/`, data);
+export const updateCategory = (id, data) => API.post(`/update_category/${id}/`, data);
 export const deleteCategory = (id) => API.delete(`/delete_category/${id}/`);
 
 // --- Brands ---
@@ -38,6 +39,12 @@ export const updateProductNew = (id, data) =>
   });
 export const deleteProductNew = (id) => API.delete(`/delete_product/${id}/`);
 
+// --- SubCategories ---
+export const getSubCategories = () => API.get("/subcategories/");
+export const addSubCategory = (data) => API.post("/subcategories/create/", data);
+export const updateSubCategory = (id, data) => API.put(`/subcategories/${id}/update/`, data);
+export const deleteSubCategory = (id) => API.delete(`/subcategories/${id}/delete/`);
+
 // --- Orders ---
 export const getOrders = () => API.get("/view_orders/");
 export const updateOrderStatus = (id, data) => API.put(`/update_order/${id}/`, data);
@@ -51,3 +58,6 @@ export const deleteCoupon = (id) => API.delete(`/delete_coupon/${id}/`);
 // --- Customers ---
 export const getCustomers = (params) => API.get("/view_users/", { params });
 export const deleteCustomer = (id) => API.delete(`/delete_users/${id}/`);
+
+// --- Dashboard ---
+export const getDashboardStats = () => API.get("/dashboard_stats/");

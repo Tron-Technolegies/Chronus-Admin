@@ -8,6 +8,7 @@ import Categories from "./pages/Categories";
 import Brands from "./pages/Brands";
 import Customers from "./pages/Customers";
 import Coupons from "./pages/Coupons";
+import SubCategories from "./pages/SubCategories";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/brands" element={<Brands />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/coupon" element={<Coupons />} />
+          <Route path="/subcategories" element={<SubCategories />} />
           <Route path="orders" element={<OrderTable />} />
         </Route>
       </Routes>

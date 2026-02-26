@@ -6,6 +6,7 @@ import { LuTag } from "react-icons/lu";
 import { IoTicketOutline } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
 import { MdLogout } from "react-icons/md";
+import { TbLayoutList } from "react-icons/tb";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const { pathname } = useLocation();
@@ -14,12 +15,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: "Dashboard", path: "/", icon: BsGrid },
     { name: "Products", path: "/products", icon: BsBoxSeam },
     { name: "Categories", path: "/categories", icon: GoStack },
+    { name: "Sub Categories", path: "/subcategories", icon: TbLayoutList },
     { name: "Brands", path: "/brands", icon: LuTag },
     { name: "Orders", path: "/orders", icon: BsCart3 },
     { name: "Customers", path: "/customers", icon: BsPeople },
     { name: "Coupons", path: "/coupon", icon: IoTicketOutline },
     // { name: "Settings", path: "/settings", icon: BsGear },
   ];
+
 
   return (
     <aside

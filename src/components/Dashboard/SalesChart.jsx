@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   AreaChart,
   Area,
@@ -8,41 +8,60 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
-const data = [
-  { name: "Jan", uv: 4000, pv: 2400, amt: 2400 },
-  { name: "Feb", uv: 3000, pv: 1398, amt: 2210 },
-  { name: "Mar", uv: 2000, pv: 9800, amt: 2290 },
-  { name: "Apr", uv: 2780, pv: 3908, amt: 2000 },
-  { name: "May", uv: 1890, pv: 4800, amt: 2181 },
-  { name: "Jun", uv: 2390, pv: 3800, amt: 2500 },
-  { name: "Jul", uv: 3490, pv: 4300, amt: 2100 },
-];
+import { getDashboardStats } from "../../api/api";
 
 const SalesChart = () => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    getDashboardStats()
+      .then((res) => {
+        // Convert {month, revenue} → {name, revenue}
+        const mapped = (res.data.monthly_sales || []).map((item) => ({
+          name: item.month,
+          revenue: parseFloat(item.revenue),
+        }));
+        setData(mapped);
+      })
+      .catch(console.error);
+  }, []);
+
   return (
     <div className="col-span-12 rounded-lg border border-gray-200 bg-white p-6 shadow-sm xl:col-span-8">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-800">Sales Overview</h3>
+        <span className="text-xs text-gray-400">Last 6 months</span>
       </div>
       <div className="h-[350px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
-            margin={{
-              top: 10,
-              right: 30,
-              left: 0,
-              bottom: 0,
-            }}
+            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
           >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="name" axisLine={false} tickLine={false} />
-            <YAxis axisLine={false} tickLine={false} />
-            <Tooltip />
-            {/* <Area type="monotone" dataKey="uv" stackId="1" stroke="#000000" fill="#000000" />
-            <Area type="monotone" dataKey="pv" stackId="1" stroke="#82ca9d" fill="#82ca9d" /> */}
-            <Area type="monotone" dataKey="amt" stackId="1" stroke="#ffc658" fill="#f0debb" />
+            <defs>
+              <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#e4b76f" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="#e4b76f" stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#888" }} />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 12, fill: "#888" }}
+              tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
+            />
+            <Tooltip
+              formatter={(value) => [`$${parseFloat(value).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, "Revenue"]}
+            />
+            <Area
+              type="monotone"
+              dataKey="revenue"
+              stroke="#e4b76f"
+              strokeWidth={2}
+              fill="url(#colorRevenue)"
+            />
           </AreaChart>
         </ResponsiveContainer>
       </div>

@@ -91,17 +91,30 @@ export default function ProductTable({ onEdit }) {
         />
       </Box>
 
-      <TableContainer component={Paper} sx={{ borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+      <TableContainer
+        component={Paper}
+        sx={{ borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
+      >
         <Table sx={{ minWidth: 650 }}>
           <TableHead sx={{ bgcolor: "#f8fafc" }}>
             <TableRow>
               <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Product</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600 }}>Category</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600 }}>Brand</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600 }}>Price</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600 }}>Stock</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>
+                Category
+              </TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>
+                Brand
+              </TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>
+                Price
+              </TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>
+                Stock
+              </TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>
+                Actions
+              </TableCell>
             </TableRow>
           </TableHead>
 
@@ -111,11 +124,7 @@ export default function ProductTable({ onEdit }) {
                 <TableRow key={row.id} hover>
                   <TableCell>
                     {row.image ? (
-                      <Avatar
-                        src={row.image.startsWith("http") ? row.image : `${BASE_URL}${row.image}`}
-                        variant="rounded"
-                        sx={{ width: 40, height: 40 }}
-                      />
+                      <Avatar src={row.image} variant="rounded" sx={{ width: 40, height: 40 }} />
                     ) : (
                       "-"
                     )}
@@ -148,7 +157,11 @@ export default function ProductTable({ onEdit }) {
                         <IconButton
                           size="small"
                           onClick={() => onEdit && onEdit(row)}
-                          sx={{ color: "#0E45B7", bgcolor: "#eff6ff", "&:hover": { bgcolor: "#dbeafe" } }}
+                          sx={{
+                            color: "#0E45B7",
+                            bgcolor: "#eff6ff",
+                            "&:hover": { bgcolor: "#dbeafe" },
+                          }}
                         >
                           <FiEdit size={18} />
                         </IconButton>
@@ -158,7 +171,11 @@ export default function ProductTable({ onEdit }) {
                         <IconButton
                           size="small"
                           onClick={() => setDeleteId(row.id)}
-                          sx={{ color: "#ef4444", bgcolor: "#fef2f2", "&:hover": { bgcolor: "#fee2e2" } }}
+                          sx={{
+                            color: "#ef4444",
+                            bgcolor: "#fef2f2",
+                            "&:hover": { bgcolor: "#fee2e2" },
+                          }}
                         >
                           <FiTrash2 size={18} />
                         </IconButton>
