@@ -42,6 +42,12 @@ export default function CategoryModal({ open, onClose, onSuccess, initialData })
     }
   };
 
+  const handleRemoveImage = (e) => {
+    e.preventDefault();
+    setImage(null);
+    setPreview(null);
+  };
+
   const handleSubmit = async () => {
     if (!name.trim()) return toast.error("Category name is required");
 
@@ -129,36 +135,56 @@ export default function CategoryModal({ open, onClose, onSuccess, initialData })
           <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
             Category Image
           </Typography>
-          <Box
-            component="label"
-            sx={{
-              border: "2px dashed #ccc",
-              borderRadius: 3,
-              height: 150,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              cursor: "pointer",
-              bgcolor: "#FAFAFA",
-              "&:hover": { bgcolor: "#F0F0F0", borderColor: "#999" },
-            }}
-          >
-            <input type="file" hidden accept="image/*" onChange={handleImageChange} />
-            {preview ? (
-              <Box
-                component="img"
-                src={preview}
-                alt="Preview"
-                sx={{ width: "100%", height: "100%", objectFit: "contain", p: 1, borderRadius: 3 }}
-              />
-            ) : (
-              <>
-                <IoCloudUploadOutline size={32} color="#666" />
-                <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                  Click to upload image
-                </Typography>
-              </>
+          <Box sx={{ position: "relative" }}>
+            <Box
+              component="label"
+              sx={{
+                border: "2px dashed #ccc",
+                borderRadius: 3,
+                height: 150,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                cursor: "pointer",
+                bgcolor: "#FAFAFA",
+                "&:hover": { bgcolor: "#F0F0F0", borderColor: "#999" },
+              }}
+            >
+              <input type="file" hidden accept="image/*" onChange={handleImageChange} />
+              {preview ? (
+                <Box
+                  component="img"
+                  src={preview}
+                  alt="Preview"
+                  sx={{ width: "100%", height: "100%", objectFit: "contain", p: 1, borderRadius: 3 }}
+                />
+              ) : (
+                <>
+                  <IoCloudUploadOutline size={32} color="#666" />
+                  <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                    Click to upload image
+                  </Typography>
+                </>
+              )}
+            </Box>
+            {preview && (
+              <IconButton
+                size="small"
+                onClick={handleRemoveImage}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  width: 24,
+                  height: 24,
+                  bgcolor: "#3D1613",
+                  color: "#fff",
+                  "&:hover": { bgcolor: "#5c2420" },
+                }}
+              >
+                <IoClose size={13} />
+              </IconButton>
             )}
           </Box>
         </Box>

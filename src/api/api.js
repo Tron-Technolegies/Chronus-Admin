@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://3.28.58.78/api/admin/"
+  baseURL: "https://api.chronosgallery.com/api/admin/",
   // baseURL: "http://127.0.0.1:8000/api/admin/",
 });
 

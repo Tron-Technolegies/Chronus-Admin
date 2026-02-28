@@ -26,6 +26,7 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
     brand: "",
     price: "",
     description: "",
+    specification: "",
     stock: "",
     status: "In Stock",
     image: null,
@@ -76,7 +77,6 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
       try {
         const subCatRes = await getSubCategories();
         console.log("SubCategories API response:", subCatRes.data);
-        // Handle different possible response shapes from backend
         const subList =
           subCatRes.data.subcategories ||
           subCatRes.data.sub_categories ||
@@ -98,6 +98,7 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
         brand: initialData.brand?.id || "",
         price: initialData.price,
         description: initialData.description,
+        specification: initialData.specification || "",
         stock: initialData.stock,
         status: initialData.stock > 0 ? "In Stock" : "Out of Stock",
         image: null,
@@ -115,6 +116,7 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
         brand: "",
         price: "",
         description: "",
+        specification: "",
         stock: "",
         status: "In Stock",
         image: null,
@@ -152,6 +154,7 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
     if (formData.brand) data.append("brand", formData.brand);
     data.append("price", formData.price);
     data.append("description", formData.description);
+    data.append("specification", formData.specification);
     data.append("stock", formData.stock);
     data.append("is_featured", formData.is_featured);
     data.append("is_best_seller", formData.is_best_seller);
@@ -288,6 +291,21 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
           />
         </Box>
 
+        {/* Specification */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Specification</Typography>
+          <TextField
+            placeholder="e.g. Material: Steel, Diameter: 42mm, Water resistance: 100m..."
+            name="specification"
+            multiline
+            rows={3}
+            fullWidth
+            value={formData.specification}
+            onChange={handleChange}
+            sx={inputStyles}
+          />
+        </Box>
+
         {/* Featured & Best Seller */}
         <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
           <FormControlLabel
@@ -317,36 +335,61 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
           <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
             Product Image
           </Typography>
-          <Box
-            component="label"
-            sx={{
-              border: "2px dashed #ccc",
-              borderRadius: 3,
-              height: 150,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              cursor: "pointer",
-              bgcolor: "#FAFAFA",
-              "&:hover": { bgcolor: "#F0F0F0", borderColor: "#999" },
-            }}
-          >
-            <input type="file" hidden accept="image/*" onChange={handleImageChange} />
-            {preview ? (
-              <Box
-                component="img"
-                src={preview}
-                alt="Preview"
-                sx={{ width: "100%", height: "100%", objectFit: "contain", p: 1, borderRadius: 3 }}
-              />
-            ) : (
-              <>
-                <IoCloudUploadOutline size={32} color="#666" />
-                <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                  Click to upload image
-                </Typography>
-              </>
+          <Box sx={{ position: "relative" }}>
+            <Box
+              component="label"
+              sx={{
+                border: "2px dashed #ccc",
+                borderRadius: 3,
+                height: 150,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                cursor: "pointer",
+                bgcolor: "#FAFAFA",
+                "&:hover": { bgcolor: "#F0F0F0", borderColor: "#999" },
+              }}
+            >
+              <input type="file" hidden accept="image/*" onChange={handleImageChange} />
+              {preview ? (
+                <Box
+                  component="img"
+                  src={preview}
+                  alt="Preview"
+                  sx={{ width: "100%", height: "100%", objectFit: "contain", p: 1, borderRadius: 3 }}
+                />
+              ) : (
+                <>
+                  <IoCloudUploadOutline size={32} color="#666" />
+                  <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                    Click to upload image
+                  </Typography>
+                </>
+              )}
+            </Box>
+            {/* Remove / Change image button */}
+            {preview && (
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setPreview(null);
+                  setFormData((prev) => ({ ...prev, image: null }));
+                }}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  width: 24,
+                  height: 24,
+                  bgcolor: "#3D1613",
+                  color: "#fff",
+                  "&:hover": { bgcolor: "#5c2420" },
+                }}
+              >
+                <IoClose size={13} />
+              </IconButton>
             )}
           </Box>
         </Box>
