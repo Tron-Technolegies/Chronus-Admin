@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { BsGrid, BsCart3, BsBoxSeam, BsPeople, BsGear } from "react-icons/bs";
 import { GoStack } from "react-icons/go";
 import { LuTag } from "react-icons/lu";
@@ -10,6 +10,13 @@ import { TbLayoutList } from "react-icons/tb";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    navigate("/login", { replace: true });
+  };
 
   const menuItems = [
     { name: "Dashboard", path: "/", icon: BsGrid },
@@ -51,6 +58,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
               <li key={item.name}>
                 <Link
                   to={item.path}
+                  onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-4 rounded-xl px-4 py-3 font-medium
                   transition-all duration-200
                   ${isActive ? "bg-[#e1b30f] text-black" : "hover:bg-[#e1b30f] hover:text-black"}`}
@@ -66,6 +74,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
       <div className="border-t border-[#56201cc6] p-4">
         <button
+          onClick={handleLogout}
           className="flex items-center gap-4 w-full rounded-xl px-4 py-3 font-medium
           transition-all duration-200 hover:bg-[#e1b30f] hover:text-black"
         >

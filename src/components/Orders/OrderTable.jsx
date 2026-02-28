@@ -141,7 +141,7 @@ export default function OrderTable({ onView, statusFilter }) {
               <TableCell align="right" sx={{ fontWeight: 600 }}>Total</TableCell>
               <TableCell sx={{ fontWeight: 600, minWidth: 240 }}>Tracking Link</TableCell>
               <TableCell align="right" sx={{ fontWeight: 600 }}>Status</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell>
+              {/* <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell> */}
             </TableRow>
           </TableHead>
 
@@ -224,7 +224,7 @@ export default function OrderTable({ onView, statusFilter }) {
                         sx={{ textTransform: "capitalize", fontWeight: 500 }}
                       />
                     </TableCell>
-                    <TableCell align="right">
+                    {/* <TableCell align="right">
                       <Tooltip title="View Order Details">
                         <IconButton
                           size="small"
@@ -234,7 +234,7 @@ export default function OrderTable({ onView, statusFilter }) {
                           <FiEye size={18} />
                         </IconButton>
                       </Tooltip>
-                    </TableCell>
+                    </TableCell> */}
                   </TableRow>
                 );
               })

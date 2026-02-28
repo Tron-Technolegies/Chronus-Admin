@@ -42,7 +42,7 @@ const Login = () => {
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-white px-4">
-      <div className="w-full max-w-md text-center">
+      <div className="w-full max-w-md border border-gray-200 p-6 rounded-md  shadow-lg text-center">
         <h2 className="text-3xl font-normal text-gray-900 mb-2 font-[Bastoni]">
           Welcome Back
         </h2>
@@ -57,7 +57,7 @@ UserName            </label>
             <input
               type="text"
               name="email"
-              placeholder="Email address"
+              placeholder="Username"
               value={formData.email}
               onChange={handleChange}
               required
@@ -103,7 +103,7 @@ UserName            </label>
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-black text-white py-3 rounded-md text-sm font-medium hover:bg-black/90 transition disabled:opacity-60"
+            className="w-full bg-black cursor-pointer text-white py-3 rounded-md text-sm font-medium hover:bg-black/90 transition disabled:opacity-60"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>

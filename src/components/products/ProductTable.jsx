@@ -22,7 +22,7 @@ import { deleteProductNew, getProductsView, BASE_URL } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
 
-export default function ProductTable({ onEdit }) {
+export default function ProductTable({ onEdit, filters = {} }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
@@ -54,14 +54,24 @@ export default function ProductTable({ onEdit }) {
     }
   };
 
-  // Filter logic
   const filteredRows = rows.filter((row) => {
-    return (
+    const matchesSearch =
       search === "" ||
       row.name.toLowerCase().includes(search.toLowerCase()) ||
       (row.category && row.category.name.toLowerCase().includes(search.toLowerCase())) ||
-      (row.brand && row.brand.name.toLowerCase().includes(search.toLowerCase()))
-    );
+      (row.brand && row.brand.name.toLowerCase().includes(search.toLowerCase()));
+
+    const matchesCategory =
+      !filters.category ||
+      (row.category &&
+        row.category.name.toLowerCase().includes(filters.category.toLowerCase()));
+
+    const matchesBrand =
+      !filters.brand ||
+      (row.brand &&
+        row.brand.name.toLowerCase().includes(filters.brand.toLowerCase()));
+
+    return matchesSearch && matchesCategory && matchesBrand;
   });
 
   if (loading) return <Loader />;
