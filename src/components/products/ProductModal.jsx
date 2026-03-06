@@ -26,7 +26,6 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
     brand: "",
     price: "",
     description: "",
-    specification: "",
     stock: "",
     status: "In Stock",
     image: null,
@@ -34,6 +33,7 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
     is_featured: false,
     is_best_seller: false,
   });
+  const [specs, setSpecs] = useState([{ key: "", value: "" }]);
   const [preview, setPreview] = useState(null);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
@@ -98,7 +98,6 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
         brand: initialData.brand?.id || "",
         price: initialData.price,
         description: initialData.description,
-        specification: initialData.specification || "",
         stock: initialData.stock,
         status: initialData.stock > 0 ? "In Stock" : "Out of Stock",
         image: null,
@@ -106,6 +105,13 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
         is_featured: initialData.is_featured || false,
         is_best_seller: initialData.is_best_seller || false,
       });
+      // Parse existing specification object into key-value rows
+      const existingSpec = initialData.specification;
+      if (existingSpec && typeof existingSpec === "object" && Object.keys(existingSpec).length > 0) {
+        setSpecs(Object.entries(existingSpec).map(([k, v]) => ({ key: k, value: String(v) })));
+      } else {
+        setSpecs([{ key: "", value: "" }]);
+      }
       setPreview(initialData.image);
       setGalleryPreview(initialData.gallery || []);
     } else {
@@ -116,7 +122,6 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
         brand: "",
         price: "",
         description: "",
-        specification: "",
         stock: "",
         status: "In Stock",
         image: null,
@@ -124,6 +129,7 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
         is_featured: false,
         is_best_seller: false,
       });
+      setSpecs([{ key: "", value: "" }]);
       setPreview(null);
       setGalleryPreview([]);
     }
@@ -154,7 +160,12 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
     if (formData.brand) data.append("brand", formData.brand);
     data.append("price", formData.price);
     data.append("description", formData.description);
-    data.append("specification", formData.specification);
+    // Serialize specs rows → JSON object, ignoring empty keys
+    const specObj = {};
+    specs.forEach(({ key, value }) => {
+      if (key.trim()) specObj[key.trim()] = value;
+    });
+    data.append("specification", JSON.stringify(specObj));
     data.append("stock", formData.stock);
     data.append("is_featured", formData.is_featured);
     data.append("is_best_seller", formData.is_best_seller);
@@ -291,19 +302,75 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
           />
         </Box>
 
-        {/* Specification */}
+        {/* Specification — dynamic key-value builder */}
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Specification</Typography>
-          <TextField
-            placeholder="e.g. Material: Steel, Diameter: 42mm, Water resistance: 100m..."
-            name="specification"
-            multiline
-            rows={3}
-            fullWidth
-            value={formData.specification}
-            onChange={handleChange}
-            sx={inputStyles}
-          />
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#333" }}>Specifications</Typography>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => setSpecs((prev) => [...prev, { key: "", value: "" }])}
+              sx={{
+                textTransform: "none",
+                borderColor: "#3D1613",
+                color: "#3D1613",
+                fontSize: "0.75rem",
+                px: 1.5,
+                "&:hover": { bgcolor: "#f9eded", borderColor: "#3D1613" },
+              }}
+            >
+              + Add Specification
+            </Button>
+          </Box>
+
+          {specs.map((spec, index) => (
+            <Box
+              key={index}
+              sx={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 1, mb: 1, alignItems: "center" }}
+            >
+              <TextField
+                placeholder="Key (e.g. Material)"
+                size="small"
+                value={spec.key}
+                onChange={(e) =>
+                  setSpecs((prev) =>
+                    prev.map((s, i) => (i === index ? { ...s, key: e.target.value } : s))
+                  )
+                }
+                sx={inputStyles}
+              />
+              <TextField
+                placeholder="Value (e.g. Steel)"
+                size="small"
+                value={spec.value}
+                onChange={(e) =>
+                  setSpecs((prev) =>
+                    prev.map((s, i) => (i === index ? { ...s, value: e.target.value } : s))
+                  )
+                }
+                sx={inputStyles}
+              />
+              <IconButton
+                size="small"
+                onClick={() =>
+                  setSpecs((prev) =>
+                    prev.length === 1
+                      ? [{ key: "", value: "" }]
+                      : prev.filter((_, i) => i !== index)
+                  )
+                }
+                sx={{
+                  bgcolor: "#fdecea",
+                  color: "#c62828",
+                  "&:hover": { bgcolor: "#ffcdd2" },
+                  width: 32,
+                  height: 32,
+                }}
+              >
+                <IoClose size={14} />
+              </IconButton>
+            </Box>
+          ))}
         </Box>
 
         {/* Featured & Best Seller */}

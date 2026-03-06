@@ -1,11 +1,12 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://api.chronosgallery.com/api/admin/",
+  // baseURL: "https://api.chronosgallery.com/api/admin/",
   // baseURL: "http://127.0.0.1:8000/api/admin/",
+  baseURL: "https://apiv2.chronosgallery.com/api/admin",
 });
 
-export const BASE_URL = "http://3.28.58.78/";
+export const BASE_URL = "http://65.0.131.33/api/";
 
 // GET products
 export const getProducts = () => API.get("/products/");
