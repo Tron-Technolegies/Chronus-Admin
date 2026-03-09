@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { loginAPI } from "../api/auth";
+import { getApiErrorMessage } from "../utils/apiError";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -31,10 +33,11 @@ const Login = () => {
       localStorage.setItem("accessToken", response.data.tokens.access);
       localStorage.setItem("refreshToken", response.data.tokens.refresh);
 
+      toast.success("Login successful");
       navigate("/");
     } catch (error) {
       console.error(error.response?.data);
-      alert(error.response?.data?.error || "Invalid credentials");
+      toast.error(getApiErrorMessage(error, "Invalid credentials"));
     } finally {
       setLoading(false);
     }
@@ -53,11 +56,12 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="space-y-6 text-left">
           <div>
             <label className="block text-xs text-gray-500 mb-2 inter">
-UserName            </label>
+              Email
+            </label>
             <input
-              type="text"
+              type="email"
               name="email"
-              placeholder="Username"
+              placeholder="Enter email"
               value={formData.email}
               onChange={handleChange}
               required

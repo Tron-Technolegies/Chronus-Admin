@@ -21,6 +21,7 @@ import toast from "react-hot-toast";
 import { deleteCustomer, getCustomers } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 export default function CustomerTable({ filters = {} }) {
   const [rows, setRows] = useState([]);
@@ -36,7 +37,7 @@ export default function CustomerTable({ filters = {} }) {
       });
       setRows(res.data.users);
     } catch (error) {
-      toast.error("Failed to fetch customers");
+      toast.error(getApiErrorMessage(error, "Failed to fetch customers"));
     } finally {
       setLoading(false);
     }
@@ -55,13 +56,15 @@ export default function CustomerTable({ filters = {} }) {
   }, [search]);
 
   const handleDelete = async () => {
+    if (!deleteId) return;
+
     try {
       await deleteCustomer(deleteId);
       toast.success("Customer deleted successfully");
       setDeleteId(null);
       fetchCustomers(search);
     } catch (error) {
-      toast.error("Delete failed");
+      toast.error(getApiErrorMessage(error, "Delete failed"));
     }
   };
 

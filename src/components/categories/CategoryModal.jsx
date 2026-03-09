@@ -16,6 +16,7 @@ import { addCategory, updateCategory } from "../../api/api";
 export default function CategoryModal({ open, onClose, onSuccess, initialData }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [subdescription, setSubdescription] = useState("");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,11 +25,13 @@ export default function CategoryModal({ open, onClose, onSuccess, initialData })
     if (initialData) {
       setName(initialData.name || "");
       setDescription(initialData.description || "");
+      setSubdescription(initialData.subdescription || "");
       setImage(null);
       setPreview(initialData.image || null);
     } else {
       setName("");
       setDescription("");
+      setSubdescription("");
       setImage(null);
       setPreview(null);
     }
@@ -56,6 +59,7 @@ export default function CategoryModal({ open, onClose, onSuccess, initialData })
       const formData = new FormData();
       formData.append("name", name);
       formData.append("description", description);
+      formData.append("subdescription", subdescription);
       if (image) formData.append("image", image);
 
       if (initialData) {
@@ -126,6 +130,23 @@ export default function CategoryModal({ open, onClose, onSuccess, initialData })
             variant="outlined"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            sx={inputStyles}
+          />
+        </Box>
+
+        {/* Sub Description */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
+            Sub Description
+          </Typography>
+          <TextField
+            placeholder="Short sub description..."
+            multiline
+            rows={2}
+            fullWidth
+            variant="outlined"
+            value={subdescription}
+            onChange={(e) => setSubdescription(e.target.value)}
             sx={inputStyles}
           />
         </Box>

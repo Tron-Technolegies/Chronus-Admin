@@ -16,6 +16,7 @@ import toast from "react-hot-toast";
 import { deleteSubCategory, getSubCategories } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 export default function SubCategoriesTable({ onEdit }) {
   const [rows, setRows] = useState([]);
@@ -27,7 +28,7 @@ export default function SubCategoriesTable({ onEdit }) {
       const res = await getSubCategories();
       setRows(res.data.subcategories || res.data || []);
     } catch (error) {
-      toast.error("Failed to fetch sub categories");
+      toast.error(getApiErrorMessage(error, "Failed to fetch sub categories"));
       setRows([]);
     } finally {
       setLoading(false);
@@ -39,13 +40,15 @@ export default function SubCategoriesTable({ onEdit }) {
   }, []);
 
   const handleDelete = async () => {
+    if (!deleteId) return;
+
     try {
       await deleteSubCategory(deleteId);
       toast.success("Sub Category deleted successfully");
       setDeleteId(null);
       fetchSubCategories();
     } catch (error) {
-      toast.error("Delete failed");
+      toast.error(getApiErrorMessage(error, "Delete failed"));
     }
   };
 

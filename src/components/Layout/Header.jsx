@@ -1,5 +1,5 @@
 import React from "react";
-import { BsSearch, BsBell, BsList } from "react-icons/bs";
+import { BsBell, BsList } from "react-icons/bs";
 import { useLocation } from "react-router-dom";
 const Header = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
@@ -40,21 +40,6 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
         {/* Dynamic Page Title */}
         <div>
           <p className="text-xl font-semibold text-gray-800">{getPageTitle()}</p>
-        </div>
-
-        {/* Search */}
-        <div className="hidden sm:block">
-          <div className="relative m-2 rounded-full bg-gray-50 border border-gray-200 p-2">
-            <BsSearch
-              size={20}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              placeholder="Type to search..."
-              className="w-full bg-transparent pl-9 pr-4 text-black focus:outline-none xl:w-80"
-            />
-          </div>
         </div>
 
         {/* Notification */}

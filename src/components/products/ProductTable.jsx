@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -14,43 +14,71 @@ import {
   TextField,
   InputAdornment,
   Tooltip,
+  Pagination,
+  Stack,
+  Typography,
 } from "@mui/material";
 import { FiEdit, FiTrash2, FiSearch } from "react-icons/fi";
 
 import toast from "react-hot-toast";
-import { deleteProductNew, getProductsView, BASE_URL } from "../../api/api";
+import { deleteProductNew, getProductsView } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 export default function ProductTable({ onEdit, filters = {} }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    total_pages: 1,
+    total_products: 0,
+    has_next: false,
+    has_previous: false,
+  });
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async (pageNumber = 1) => {
+    setLoading(true);
+
     try {
-      const res = await getProductsView();
-      setRows(res.data.products);
+      const res = await getProductsView({ page: pageNumber });
+      const responseData = res.data || {};
+      const products = Array.isArray(responseData.products) ? responseData.products : [];
+      const serverPagination = responseData.pagination || {};
+
+      setRows(products);
+      setPagination({
+        current_page: serverPagination.current_page || pageNumber,
+        total_pages: serverPagination.total_pages || 1,
+        total_products: serverPagination.total_products || products.length,
+        has_next: Boolean(serverPagination.has_next),
+        has_previous: Boolean(serverPagination.has_previous),
+      });
+      setPage(serverPagination.current_page || pageNumber);
     } catch (error) {
-      toast.error("Failed to fetch products");
+      toast.error(getApiErrorMessage(error, "Failed to fetch products"));
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchProducts();
   }, []);
 
+  useEffect(() => {
+    fetchProducts(page);
+  }, [fetchProducts, page]);
+
   const handleDelete = async () => {
+    if (!deleteId) return;
+
     try {
       await deleteProductNew(deleteId);
       toast.success("Product deleted successfully");
       setDeleteId(null);
-      fetchProducts();
+      fetchProducts(page);
     } catch (error) {
-      toast.error("Delete failed");
+      toast.error(getApiErrorMessage(error, "Delete failed"));
     }
   };
 
@@ -204,6 +232,25 @@ export default function ProductTable({ onEdit, filters = {} }) {
           </TableBody>
         </Table>
       </TableContainer>
+      {pagination.total_pages > 1 && (
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          alignItems={{ xs: "flex-start", sm: "center" }}
+          justifyContent="space-between"
+          spacing={2}
+          sx={{ mt: 2 }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            Showing page {pagination.current_page} of {pagination.total_pages} ({pagination.total_products} products)
+          </Typography>
+          <Pagination
+            page={pagination.current_page}
+            count={pagination.total_pages}
+            color="primary"
+            onChange={(_, value) => setPage(value)}
+          />
+        </Stack>
+      )}
 
       <ConfirmModal
         open={Boolean(deleteId)}

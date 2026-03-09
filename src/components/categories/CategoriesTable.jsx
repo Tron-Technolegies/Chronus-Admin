@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import { deleteCategory, getCategories } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 export default function CategoriesTable({ onEdit }) {
   const [rows, setRows] = useState([]);
@@ -29,7 +30,7 @@ export default function CategoriesTable({ onEdit }) {
       const res = await getCategories();
       setRows(res.data.categories);
     } catch (error) {
-      toast.error("Failed to fetch categories");
+      toast.error(getApiErrorMessage(error, "Failed to fetch categories"));
     } finally {
       setLoading(false);
     }
@@ -40,13 +41,15 @@ export default function CategoriesTable({ onEdit }) {
   }, []);
 
   const handleDelete = async () => {
+    if (!deleteId) return;
+
     try {
       await deleteCategory(deleteId);
       toast.success("Category deleted successfully");
       setDeleteId(null);
       fetchCategories();
     } catch (error) {
-      toast.error("Delete failed");
+      toast.error(getApiErrorMessage(error, "Delete failed"));
     }
   };
 

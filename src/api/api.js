@@ -29,7 +29,7 @@ export const addBrand = (data) => API.post("/add_brand/", data);
 export const updateBrand = (id, data) => API.put(`/update_brand/${id}/`, data);
 export const deleteBrand = (id) => API.delete(`/delete_brand/${id}/`);
 
-export const getProductsView = () => API.get("/view_products/");
+export const getProductsView = (params) => API.get("/view_products/", { params });
 export const addProduct = (data) =>
   API.post("/add_products/", data, {
     headers: { "Content-Type": "multipart/form-data" },

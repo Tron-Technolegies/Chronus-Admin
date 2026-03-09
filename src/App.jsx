@@ -11,15 +11,23 @@ import Coupons from "./pages/Coupons";
 import SubCategories from "./pages/SubCategories";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
     <>
+      <Toaster position="top-right" />
       <Routes>
-        {/* Public route */}
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
 
-        {/* Protected admin routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<HomeLayout />}>
             <Route index element={<Dashboard />} />
@@ -34,7 +42,6 @@ function App() {
           </Route>
         </Route>
 
-        {/* Catch-all: redirect unknown paths to login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </>

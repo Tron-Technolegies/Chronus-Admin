@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import { deleteBrand, getBrands } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 export default function BrandTable({ onEdit }) {
   const [rows, setRows] = useState([]);
@@ -28,7 +29,7 @@ export default function BrandTable({ onEdit }) {
       const res = await getBrands();
       setRows(res.data.brands);
     } catch (error) {
-      toast.error("Failed to fetch brands");
+      toast.error(getApiErrorMessage(error, "Failed to fetch brands"));
     } finally {
       setLoading(false);
     }
@@ -39,13 +40,15 @@ export default function BrandTable({ onEdit }) {
   }, []);
 
   const handleDelete = async () => {
+    if (!deleteId) return;
+
     try {
       await deleteBrand(deleteId);
       toast.success("Brand deleted successfully");
       setDeleteId(null);
       fetchBrands();
     } catch (error) {
-      toast.error("Delete failed");
+      toast.error(getApiErrorMessage(error, "Delete failed"));
     }
   };
 

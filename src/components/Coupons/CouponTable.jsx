@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import { deleteCoupon, getCoupons } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 export default function CouponTable({ onEdit }) {
   const [rows, setRows] = useState([]);
@@ -28,7 +29,7 @@ export default function CouponTable({ onEdit }) {
       const res = await getCoupons();
       setRows(res.data.coupons);
     } catch (error) {
-      toast.error("Failed to fetch coupons");
+      toast.error(getApiErrorMessage(error, "Failed to fetch coupons"));
     } finally {
       setLoading(false);
     }
@@ -39,13 +40,15 @@ export default function CouponTable({ onEdit }) {
   }, []);
 
   const handleDelete = async () => {
+    if (!deleteId) return;
+
     try {
       await deleteCoupon(deleteId);
       toast.success("Coupon deleted successfully");
       setDeleteId(null);
       fetchCoupons();
     } catch (error) {
-      toast.error("Delete failed");
+      toast.error(getApiErrorMessage(error, "Delete failed"));
     }
   };
 
