@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -17,101 +16,47 @@ import {
   Pagination,
   Stack,
   Typography,
+  FormControl,
+  Select,
+  MenuItem,
+  Button,
 } from "@mui/material";
 import { FiEdit, FiTrash2, FiSearch } from "react-icons/fi";
 
-import toast from "react-hot-toast";
-import { deleteProductNew, getProductsView } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
-import { getApiErrorMessage } from "../../utils/apiError";
+import useProductsTable from "../../hooks/products/useProductsTable";
 
-export default function ProductTable({ onEdit, filters = {} }) {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [deleteId, setDeleteId] = useState(null);
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState({
-    current_page: 1,
-    total_pages: 1,
-    total_products: 0,
-    has_next: false,
-    has_previous: false,
-  });
-
-  const fetchProducts = useCallback(async (pageNumber = 1) => {
-    setLoading(true);
-
-    try {
-      const res = await getProductsView({ page: pageNumber });
-      const responseData = res.data || {};
-      const products = Array.isArray(responseData.products) ? responseData.products : [];
-      const serverPagination = responseData.pagination || {};
-
-      setRows(products);
-      setPagination({
-        current_page: serverPagination.current_page || pageNumber,
-        total_pages: serverPagination.total_pages || 1,
-        total_products: serverPagination.total_products || products.length,
-        has_next: Boolean(serverPagination.has_next),
-        has_previous: Boolean(serverPagination.has_previous),
-      });
-      setPage(serverPagination.current_page || pageNumber);
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to fetch products"));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchProducts(page);
-  }, [fetchProducts, page]);
-
-  const handleDelete = async () => {
-    if (!deleteId) return;
-
-    try {
-      await deleteProductNew(deleteId);
-      toast.success("Product deleted successfully");
-      setDeleteId(null);
-      fetchProducts(page);
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, "Delete failed"));
-    }
-  };
-
-  const filteredRows = rows.filter((row) => {
-    const matchesSearch =
-      search === "" ||
-      row.name.toLowerCase().includes(search.toLowerCase()) ||
-      (row.category && row.category.name.toLowerCase().includes(search.toLowerCase())) ||
-      (row.brand && row.brand.name.toLowerCase().includes(search.toLowerCase()));
-
-    const matchesCategory =
-      !filters.category ||
-      (row.category &&
-        row.category.name.toLowerCase().includes(filters.category.toLowerCase()));
-
-    const matchesBrand =
-      !filters.brand ||
-      (row.brand &&
-        row.brand.name.toLowerCase().includes(filters.brand.toLowerCase()));
-
-    return matchesSearch && matchesCategory && matchesBrand;
-  });
+export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
+  const {
+    rows,
+    loading,
+    deleteId,
+    setDeleteId,
+    handleDelete,
+    searchInput,
+    setSearchInput,
+    handleSearchSubmit,
+    clearSearch,
+    sortBy,
+    setSortBy,
+    pagination,
+    setPage,
+  } = useProductsTable({ filters, refreshKey });
 
   if (loading) return <Loader />;
 
   return (
     <>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5, mb: 2, flexWrap: "wrap" }}>
         <TextField
           size="small"
           placeholder="Search products..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSearchSubmit();
+          }}
           sx={{
             width: 300,
             "& .MuiOutlinedInput-root": {
@@ -127,6 +72,36 @@ export default function ProductTable({ onEdit, filters = {} }) {
             ),
           }}
         />
+        <Button
+          size="small"
+          variant="contained"
+          onClick={handleSearchSubmit}
+          sx={{ bgcolor: "#3D1613", textTransform: "none", "&:hover": { bgcolor: "#2a0f0d" } }}
+        >
+          Search
+        </Button>
+        <Button
+          size="small"
+          variant="text"
+          onClick={clearSearch}
+          sx={{ color: "#666", textTransform: "none" }}
+        >
+          Clear
+        </Button>
+        <FormControl size="small" sx={{ minWidth: 180 }}>
+          <Select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            sx={{ borderRadius: "8px", bgcolor: "white" }}
+          >
+            <MenuItem value="-id">Newest</MenuItem>
+            <MenuItem value="id">Oldest</MenuItem>
+            <MenuItem value="name">Name (A-Z)</MenuItem>
+            <MenuItem value="-name">Name (Z-A)</MenuItem>
+            <MenuItem value="price">Price (Low-High)</MenuItem>
+            <MenuItem value="-price">Price (High-Low)</MenuItem>
+          </Select>
+        </FormControl>
       </Box>
 
       <TableContainer
@@ -157,8 +132,8 @@ export default function ProductTable({ onEdit, filters = {} }) {
           </TableHead>
 
           <TableBody>
-            {filteredRows.length > 0 ? (
-              filteredRows.map((row) => (
+            {rows.length > 0 ? (
+              rows.map((row) => (
                 <TableRow key={row.id} hover>
                   <TableCell>
                     {row.image ? (
