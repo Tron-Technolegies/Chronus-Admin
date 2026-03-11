@@ -21,6 +21,7 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
     formData,
     specs,
     sizes,
+    colors,
     preview,
     categories,
     brands,
@@ -39,6 +40,11 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
     addSizeRow,
     updateSizeRow,
     removeSizeRow,
+    addColorRow,
+    updateColorRow,
+    updateColorImage,
+    removeColorRow,
+    clearColorImage,
     handleSubmit,
   } = useProductForm({ open, onClose, onSuccess, initialData });
 
@@ -256,6 +262,116 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
               >
                 <IoClose size={14} />
               </IconButton>
+            </Box>
+          ))}
+        </Box>
+
+        <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#333" }}>Colors</Typography>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={addColorRow}
+              sx={{
+                textTransform: "none",
+                borderColor: "#3D1613",
+                color: "#3D1613",
+                fontSize: "0.75rem",
+                px: 1.5,
+                "&:hover": { bgcolor: "#f9eded", borderColor: "#3D1613" },
+              }}
+            >
+              + Add Color
+            </Button>
+          </Box>
+
+          {colors.map((item, index) => (
+            <Box
+              key={index}
+              sx={{
+                border: "1px solid #eee",
+                borderRadius: 2,
+                p: 1.25,
+                mb: 1,
+                display: "grid",
+                gridTemplateColumns: "1fr auto",
+                gap: 1,
+                alignItems: "start",
+              }}
+            >
+              <TextField
+                placeholder="Color name (e.g. Midnight Black)"
+                size="small"
+                value={item.color_name}
+                onChange={(e) => updateColorRow(index, e.target.value)}
+                sx={inputStyles}
+              />
+
+              <IconButton
+                size="small"
+                onClick={() => removeColorRow(index)}
+                sx={{
+                  bgcolor: "#fdecea",
+                  color: "#c62828",
+                  "&:hover": { bgcolor: "#ffcdd2" },
+                  width: 32,
+                  height: 32,
+                }}
+              >
+                <IoClose size={14} />
+              </IconButton>
+
+              <Box sx={{ gridColumn: "1 / -1", display: "flex", gap: 1.5, alignItems: "center" }}>
+                <Button
+                  component="label"
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    textTransform: "none",
+                    borderColor: "#ccc",
+                    color: "#333",
+                    minWidth: 120,
+                  }}
+                >
+                  Upload Color Image
+                  <input
+                    hidden
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => updateColorImage(index, e.target.files?.[0])}
+                  />
+                </Button>
+
+                {item.preview ? (
+                  <>
+                    <Box
+                      component="img"
+                      src={item.preview}
+                      alt={item.color_name || `Color ${index + 1}`}
+                      sx={{
+                        width: 44,
+                        height: 44,
+                        objectFit: "cover",
+                        borderRadius: 1,
+                        border: "1px solid #ddd",
+                      }}
+                    />
+                    <Button
+                      size="small"
+                      color="error"
+                      onClick={() => clearColorImage(index)}
+                      sx={{ textTransform: "none", minWidth: 40 }}
+                    >
+                      Remove
+                    </Button>
+                  </>
+                ) : (
+                  <Typography variant="caption" color="textSecondary">
+                    Optional image
+                  </Typography>
+                )}
+              </Box>
             </Box>
           ))}
         </Box>

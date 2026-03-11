@@ -28,6 +28,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
   const [specs, setSpecs] = useState([{ key: "", value: "" }]);
   const [sizes, setSizes] = useState([{ size: "", price: "" }]);
+  const [colors, setColors] = useState([{ color_name: "", image: null, preview: "" }]);
   const [preview, setPreview] = useState(null);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
@@ -95,12 +96,26 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
         setSizes([{ size: "", price: "" }]);
       }
 
+      const existingColors = Array.isArray(initialData.colors) ? initialData.colors : [];
+      if (existingColors.length > 0) {
+        setColors(
+          existingColors.map((item) => ({
+            color_name: item.color_name || "",
+            image: null,
+            preview: item.image || "",
+          })),
+        );
+      } else {
+        setColors([{ color_name: "", image: null, preview: "" }]);
+      }
+
       setPreview(initialData.image || null);
       setGalleryPreview(initialData.gallery || []);
     } else {
       setFormData(DEFAULT_FORM_DATA);
       setSpecs([{ key: "", value: "" }]);
       setSizes([{ size: "", price: "" }]);
+      setColors([{ color_name: "", image: null, preview: "" }]);
       setPreview(null);
       setGalleryPreview([]);
     }
@@ -170,6 +185,38 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     setSizes((prev) => (prev.length === 1 ? [{ size: "", price: "" }] : prev.filter((_, i) => i !== index)));
   };
 
+  const addColorRow = () => {
+    setColors((prev) => [...prev, { color_name: "", image: null, preview: "" }]);
+  };
+
+  const updateColorRow = (index, value) => {
+    setColors((prev) => prev.map((row, i) => (i === index ? { ...row, color_name: value } : row)));
+  };
+
+  const updateColorImage = (index, file) => {
+    if (!file) return;
+    const nextPreview = URL.createObjectURL(file);
+    setColors((prev) =>
+      prev.map((row, i) =>
+        i === index ? { ...row, image: file, preview: nextPreview } : row,
+      ),
+    );
+  };
+
+  const removeColorRow = (index) => {
+    setColors((prev) =>
+      prev.length === 1
+        ? [{ color_name: "", image: null, preview: "" }]
+        : prev.filter((_, i) => i !== index),
+    );
+  };
+
+  const clearColorImage = (index) => {
+    setColors((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, image: null, preview: "" } : row)),
+    );
+  };
+
   const specificationPayload = useMemo(() => {
     const specObj = {};
     specs.forEach(({ key, value }) => {
@@ -184,6 +231,14 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
         .filter((item) => item.size.trim() && item.price !== "")
         .map((item) => ({ size: item.size.trim(), price: item.price })),
     [sizes],
+  );
+
+  const colorsPayload = useMemo(
+    () =>
+      colors
+        .filter((item) => item.color_name.trim())
+        .map((item) => ({ color_name: item.color_name.trim(), image: item.image })),
+    [colors],
   );
 
   const handleSubmit = async () => {
@@ -202,11 +257,20 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     data.append("description", formData.description);
     data.append("specification", JSON.stringify(specificationPayload));
     data.append("sizes", JSON.stringify(sizesPayload));
+    data.append(
+      "colors",
+      JSON.stringify(colorsPayload.map(({ color_name }) => ({ color_name }))),
+    );
     data.append("stock", formData.stock);
     data.append("is_featured", formData.is_featured);
     data.append("is_best_seller", formData.is_best_seller);
     if (formData.image) data.append("image", formData.image);
     formData.gallery.forEach((file) => data.append("images", file));
+    colorsPayload.forEach((color, index) => {
+      if (color.image) {
+        data.append(`color_image_${index}`, color.image);
+      }
+    });
 
     try {
       if (initialData) {
@@ -229,6 +293,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     formData,
     specs,
     sizes,
+    colors,
     preview,
     categories,
     brands,
@@ -247,6 +312,11 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     addSizeRow,
     updateSizeRow,
     removeSizeRow,
+    addColorRow,
+    updateColorRow,
+    updateColorImage,
+    removeColorRow,
+    clearColorImage,
     handleSubmit,
   };
 }

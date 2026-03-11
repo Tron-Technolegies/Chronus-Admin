@@ -16,9 +16,6 @@ import {
   Pagination,
   Stack,
   Typography,
-  FormControl,
-  Select,
-  MenuItem,
   Button,
 } from "@mui/material";
 import { FiEdit, FiTrash2, FiSearch } from "react-icons/fi";
@@ -38,8 +35,6 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
     setSearchInput,
     handleSearchSubmit,
     clearSearch,
-    sortBy,
-    setSortBy,
     pagination,
     setPage,
   } = useProductsTable({ filters, refreshKey });
@@ -88,20 +83,6 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
         >
           Clear
         </Button>
-        <FormControl size="small" sx={{ minWidth: 180 }}>
-          <Select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            sx={{ borderRadius: "8px", bgcolor: "white" }}
-          >
-            <MenuItem value="-id">Newest</MenuItem>
-            <MenuItem value="id">Oldest</MenuItem>
-            <MenuItem value="name">Name (A-Z)</MenuItem>
-            <MenuItem value="-name">Name (Z-A)</MenuItem>
-            <MenuItem value="price">Price (Low-High)</MenuItem>
-            <MenuItem value="-price">Price (High-Low)</MenuItem>
-          </Select>
-        </FormControl>
       </Box>
 
       <TableContainer

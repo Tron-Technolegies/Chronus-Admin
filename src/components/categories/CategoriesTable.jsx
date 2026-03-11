@@ -64,6 +64,7 @@ export default function CategoriesTable({ onEdit }) {
               <TableCell>Image</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Description</TableCell>
+              <TableCell>Priority</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -84,6 +85,7 @@ export default function CategoriesTable({ onEdit }) {
                 <TableCell sx={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {row.description || "-"}
                 </TableCell>
+                <TableCell>{row.priority ?? 0}</TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
                     <Tooltip title="Edit Category">

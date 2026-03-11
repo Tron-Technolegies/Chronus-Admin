@@ -17,6 +17,7 @@ export default function CategoryModal({ open, onClose, onSuccess, initialData })
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [subdescription, setSubdescription] = useState("");
+  const [priority, setPriority] = useState("0");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -26,12 +27,14 @@ export default function CategoryModal({ open, onClose, onSuccess, initialData })
       setName(initialData.name || "");
       setDescription(initialData.description || "");
       setSubdescription(initialData.subdescription || "");
+      setPriority(String(initialData.priority ?? 0));
       setImage(null);
       setPreview(initialData.image || null);
     } else {
       setName("");
       setDescription("");
       setSubdescription("");
+      setPriority("0");
       setImage(null);
       setPreview(null);
     }
@@ -53,6 +56,9 @@ export default function CategoryModal({ open, onClose, onSuccess, initialData })
 
   const handleSubmit = async () => {
     if (!name.trim()) return toast.error("Category name is required");
+    if (priority === "" || Number.isNaN(Number(priority))) {
+      return toast.error("Priority must be a number");
+    }
 
     setLoading(true);
     try {
@@ -60,6 +66,7 @@ export default function CategoryModal({ open, onClose, onSuccess, initialData })
       formData.append("name", name);
       formData.append("description", description);
       formData.append("subdescription", subdescription);
+      formData.append("priority", String(Number(priority)));
       if (image) formData.append("image", image);
 
       if (initialData) {
@@ -147,6 +154,22 @@ export default function CategoryModal({ open, onClose, onSuccess, initialData })
             variant="outlined"
             value={subdescription}
             onChange={(e) => setSubdescription(e.target.value)}
+            sx={inputStyles}
+          />
+        </Box>
+
+        {/* Priority */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
+            Priority
+          </Typography>
+          <TextField
+            placeholder="0"
+            type="number"
+            fullWidth
+            variant="outlined"
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
             sx={inputStyles}
           />
         </Box>

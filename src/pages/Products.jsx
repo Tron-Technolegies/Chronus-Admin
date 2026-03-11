@@ -23,7 +23,9 @@ export default function Products() {
     handleEditSuccess,
     toggleFilters,
     updateCategoryFilter,
-    updateBrandFilter,
+    updateSubCategoryFilter,
+    updateMinPriceFilter,
+    updateMaxPriceFilter,
     applyFilters,
     clearFilters,
   } = useProductsPage();
@@ -78,12 +80,36 @@ export default function Products() {
           </div>
 
           <div className="flex flex-col gap-1 min-w-[180px]">
-            <label className="text-xs text-gray-500 font-medium">Brand</label>
+            <label className="text-xs text-gray-500 font-medium">Subcategory</label>
             <input
               type="text"
-              placeholder="e.g. Chronas"
-              value={filterInputs.brand}
-              onChange={(e) => updateBrandFilter(e.target.value)}
+              placeholder="e.g. his or her"
+              value={filterInputs.subcategory}
+              onChange={(e) => updateSubCategoryFilter(e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3D1613]"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1 min-w-[180px]">
+            <label className="text-xs text-gray-500 font-medium">Min price</label>
+            <input
+              type="number"
+              min="0"
+              placeholder="e.g. 500"
+              value={filterInputs.min_price}
+              onChange={(e) => updateMinPriceFilter(e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3D1613]"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1 min-w-[180px]">
+            <label className="text-xs text-gray-500 font-medium">Max price</label>
+            <input
+              type="number"
+              min="0"
+              placeholder="e.g. 5000"
+              value={filterInputs.max_price}
+              onChange={(e) => updateMaxPriceFilter(e.target.value)}
               className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3D1613]"
             />
           </div>

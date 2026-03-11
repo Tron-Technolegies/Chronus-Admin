@@ -5,8 +5,18 @@ export default function useProductsPage() {
   const [editData, setEditData] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({ category: "", brand: "" });
-  const [filterInputs, setFilterInputs] = useState({ category: "", brand: "" });
+  const [filters, setFilters] = useState({
+    category: "",
+    subcategory: "",
+    min_price: "",
+    max_price: "",
+  });
+  const [filterInputs, setFilterInputs] = useState({
+    category: "",
+    subcategory: "",
+    min_price: "",
+    max_price: "",
+  });
 
   const handleSuccess = () => {
     setRefreshKey((prev) => prev + 1);
@@ -41,20 +51,30 @@ export default function useProductsPage() {
     setFilterInputs((prev) => ({ ...prev, category: value }));
   };
 
-  const updateBrandFilter = (value) => {
-    setFilterInputs((prev) => ({ ...prev, brand: value }));
+  const updateSubCategoryFilter = (value) => {
+    setFilterInputs((prev) => ({ ...prev, subcategory: value }));
+  };
+
+  const updateMinPriceFilter = (value) => {
+    setFilterInputs((prev) => ({ ...prev, min_price: value }));
+  };
+
+  const updateMaxPriceFilter = (value) => {
+    setFilterInputs((prev) => ({ ...prev, max_price: value }));
   };
 
   const applyFilters = () => {
     setFilters({
       category: filterInputs.category.trim(),
-      brand: filterInputs.brand.trim(),
+      subcategory: filterInputs.subcategory.trim(),
+      min_price: filterInputs.min_price.trim(),
+      max_price: filterInputs.max_price.trim(),
     });
   };
 
   const clearFilters = () => {
-    setFilters({ category: "", brand: "" });
-    setFilterInputs({ category: "", brand: "" });
+    setFilters({ category: "", subcategory: "", min_price: "", max_price: "" });
+    setFilterInputs({ category: "", subcategory: "", min_price: "", max_price: "" });
   };
 
   const activeFilterCount = useMemo(
@@ -78,7 +98,9 @@ export default function useProductsPage() {
     handleEditSuccess,
     toggleFilters,
     updateCategoryFilter,
-    updateBrandFilter,
+    updateSubCategoryFilter,
+    updateMinPriceFilter,
+    updateMaxPriceFilter,
     applyFilters,
     clearFilters,
   };
