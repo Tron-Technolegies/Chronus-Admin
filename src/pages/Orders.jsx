@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import OrderTable from "../components/Orders/OrderTable";
 import OrderModal from "../components/Orders/OrderModal";
-import { IoFunnelOutline } from "react-icons/io5";
 
 export default function Orders() {
   const [viewData, setViewData] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [statusFilter, setStatusFilter] = useState("All");
 
@@ -14,6 +14,7 @@ export default function Orders() {
 
   const handleView = (row) => {
     setViewData(row);
+    setModalOpen(true);
   };
 
   const tabs = ["All", "Pending", "Processing", "Shipped", "Completed", "Cancelled"];
@@ -45,18 +46,19 @@ export default function Orders() {
         <OrderTable key={refreshKey} onView={handleView} statusFilter={statusFilter} />
       </div>
 
-       {/* View/Edit Modal */}
-       {viewData && (
-        <OrderModal
-          open={Boolean(viewData)}
-          onClose={() => setViewData(null)}
-          onSuccess={() => {
-            handleSuccess();
-            setViewData(null);
-          }}
-          initialData={viewData}
-        />
-      )}
+      <OrderModal
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setViewData(null);
+        }}
+        onSuccess={() => {
+          handleSuccess();
+          setModalOpen(false);
+          setViewData(null);
+        }}
+        initialData={viewData}
+      />
     </div>
   );
 }

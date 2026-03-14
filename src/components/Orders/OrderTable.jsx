@@ -13,6 +13,9 @@ import {
   InputAdornment,
   Box,
   Tooltip,
+  FormControl,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { FiEye, FiSearch, FiLink, FiCheck } from "react-icons/fi";
 import toast from "react-hot-toast";
@@ -23,13 +26,12 @@ export default function OrderTable({ onView, statusFilter }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  // Per-row tracking link state: { [orderId]: { value, saving } }
   const [trackingInputs, setTrackingInputs] = useState({});
 
   const fetchOrders = async () => {
     try {
       const res = await getOrders();
-      setRows(res.data.orders);
+      setRows(res.data.orders || []);
     } catch (error) {
       toast.error("Failed to fetch orders");
     } finally {
@@ -41,7 +43,6 @@ export default function OrderTable({ onView, statusFilter }) {
     fetchOrders();
   }, []);
 
-  // Initialise tracking inputs from fetched rows
   useEffect(() => {
     if (rows.length > 0) {
       const initial = {};
@@ -63,14 +64,8 @@ export default function OrderTable({ onView, statusFilter }) {
       await updateOrderStatus(row.id, {
         status: row.status,
         tracking_link: trackingValue,
-        tracking_id: trackingValue,
       });
-      // Update local row so "Track" link reflects save
-      setRows((prev) =>
-        prev.map((r) =>
-          r.id === row.id ? { ...r, tracking_link: trackingValue, tracking_id: trackingValue } : r
-        )
-      );
+      setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, tracking_link: trackingValue } : r)));
       toast.success("Tracking link saved");
     } catch {
       toast.error("Failed to save tracking link");
@@ -79,28 +74,65 @@ export default function OrderTable({ onView, statusFilter }) {
     }
   };
 
-  // Filter logic
+  const handleStatusChange = async (row, nextStatus) => {
+    const previousStatus = row.status;
+    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, status: nextStatus } : r)));
+
+    try {
+      await updateOrderStatus(row.id, {
+        status: nextStatus,
+        tracking_link: trackingInputs[row.id]?.value || row.tracking_link || "",
+      });
+      toast.success("Order status updated");
+    } catch {
+      setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, status: previousStatus } : r)));
+      toast.error("Failed to update status");
+    }
+  };
+
+  const getUserName = (row) => {
+    if (typeof row.user === "string") return row.user;
+    if (row.user && typeof row.user === "object") {
+      const name = `${row.user.first_name || ""} ${row.user.last_name || ""}`.trim();
+      return name || row.user.email || `User #${row.user.id || "-"}`;
+    }
+    return "Guest";
+  };
+
+  const getEmail = (row) => {
+    if (typeof row.email === "string") return row.email;
+    if (row.user && typeof row.user === "object" && typeof row.user.email === "string") {
+      return row.user.email;
+    }
+    return "-";
+  };
+
   const filteredRows = rows.filter((row) => {
     const matchesSearch =
       search === "" ||
       row.id.toString().includes(search) ||
-      (row.user && row.user.toLowerCase().includes(search.toLowerCase())) ||
-      (row.email && row.email.toLowerCase().includes(search.toLowerCase()));
+      getUserName(row).toLowerCase().includes(search.toLowerCase()) ||
+      getEmail(row).toLowerCase().includes(search.toLowerCase());
 
-    const matchesStatus =
-      !statusFilter || statusFilter === "All" || row.status === statusFilter.toLowerCase();
+    const matchesStatus = !statusFilter || statusFilter === "All" || row.status === statusFilter.toLowerCase();
 
     return matchesSearch && matchesStatus;
   });
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "pending":   return "warning";
-      case "processing":return "info";
-      case "shipped":   return "primary";
-      case "completed": return "success";
-      case "cancelled": return "error";
-      default:          return "default";
+      case "pending":
+        return "warning";
+      case "processing":
+        return "info";
+      case "shipped":
+        return "primary";
+      case "completed":
+        return "success";
+      case "cancelled":
+        return "error";
+      default:
+        return "default";
     }
   };
 
@@ -132,16 +164,23 @@ export default function OrderTable({ onView, statusFilter }) {
       </Box>
 
       <TableContainer component={Paper} sx={{ borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
-        <Table sx={{ minWidth: 750 }}>
+        <Table sx={{ minWidth: 900 }}>
           <TableHead sx={{ bgcolor: "#f8fafc" }}>
             <TableRow>
               <TableCell sx={{ fontWeight: 600 }}>Order ID</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>User / Details</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600 }}>Total</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>
+                Total
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600, minWidth: 280 }}>Items</TableCell>
               <TableCell sx={{ fontWeight: 600, minWidth: 240 }}>Tracking Link</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600 }}>Status</TableCell>
-              {/* <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell> */}
+              <TableCell align="right" sx={{ fontWeight: 600 }}>
+                Status
+              </TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>
+                Actions
+              </TableCell>
             </TableRow>
           </TableHead>
 
@@ -150,22 +189,40 @@ export default function OrderTable({ onView, statusFilter }) {
               filteredRows.map((row) => {
                 const trackingState = trackingInputs[row.id] || { value: "", saving: false };
                 return (
-                  <TableRow key={row.id} hover>
+                  <TableRow
+                    key={row.id}
+                    hover
+                    onClick={() => onView && onView(row)}
+                    sx={{ cursor: "pointer" }}
+                  >
                     <TableCell>#{row.id}</TableCell>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-medium text-gray-900">{row.user}</span>
-                        <span className="text-xs text-gray-500">{row.email}</span>
+                        <span className="font-medium text-gray-900">{getUserName(row)}</span>
+                        <span className="text-xs text-gray-500">{getEmail(row)}</span>
                         {row.phone && <span className="text-xs text-gray-400">{row.phone}</span>}
                       </div>
                     </TableCell>
                     <TableCell>{new Date(row.created_at).toLocaleDateString()}</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      ₹{parseFloat(row.total_amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      ${parseFloat(row.total_amount || 0).toFixed(2)}
                     </TableCell>
 
-                    {/* Inline tracking link input */}
                     <TableCell>
+                      {Array.isArray(row.items) && row.items.length > 0 ? (
+                        <div className="space-y-1">
+                          {row.items.map((item, index) => (
+                            <div key={`${row.id}-item-${index}`} className="text-xs text-gray-700 leading-5">
+                              {item.product_name || `Product #${item.product || "-"}`} x {item.quantity || 0} (${parseFloat(item.price || 0).toFixed(2)})
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">No items</span>
+                      )}
+                    </TableCell>
+
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                         <TextField
                           size="small"
@@ -200,11 +257,10 @@ export default function OrderTable({ onView, statusFilter }) {
                             <FiCheck size={14} />
                           </IconButton>
                         </Tooltip>
-                        {/* Quick visit link if already saved */}
-                        {(row.tracking_link || row.tracking_id) && (
+                        {row.tracking_link && (
                           <Tooltip title="Open tracking link">
                             <a
-                              href={row.tracking_link || row.tracking_id}
+                              href={row.tracking_link}
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{ color: "#3b82f6", fontSize: "0.75rem", whiteSpace: "nowrap" }}
@@ -216,31 +272,50 @@ export default function OrderTable({ onView, statusFilter }) {
                       </Box>
                     </TableCell>
 
-                    <TableCell align="right">
-                      <Chip
-                        label={row.status}
-                        color={getStatusColor(row.status)}
-                        size="small"
-                        sx={{ textTransform: "capitalize", fontWeight: 500 }}
-                      />
+                    <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                      <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
+                        <Chip
+                          label={row.status}
+                          color={getStatusColor(row.status)}
+                          size="small"
+                          sx={{ textTransform: "capitalize", fontWeight: 500 }}
+                        />
+                        <FormControl size="small" sx={{ minWidth: 130 }}>
+                          <Select
+                            value={row.status}
+                            onChange={(e) => handleStatusChange(row, e.target.value)}
+                            sx={{ fontSize: "0.78rem", borderRadius: "6px" }}
+                          >
+                            <MenuItem value="pending">Pending</MenuItem>
+                            <MenuItem value="processing">Processing</MenuItem>
+                            <MenuItem value="shipped">Shipped</MenuItem>
+                            <MenuItem value="completed">Completed</MenuItem>
+                            <MenuItem value="cancelled">Cancelled</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Box>
                     </TableCell>
-                    {/* <TableCell align="right">
+
+                    <TableCell align="right">
                       <Tooltip title="View Order Details">
                         <IconButton
                           size="small"
-                          onClick={() => onView && onView(row)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onView && onView(row);
+                          }}
                           sx={{ color: "#0E45B7", bgcolor: "#eff6ff", "&:hover": { bgcolor: "#dbeafe" } }}
                         >
                           <FiEye size={18} />
                         </IconButton>
                       </Tooltip>
-                    </TableCell> */}
+                    </TableCell>
                   </TableRow>
                 );
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 6, color: "gray" }}>
+                <TableCell colSpan={8} align="center" sx={{ py: 6, color: "gray" }}>
                   No orders found
                 </TableCell>
               </TableRow>

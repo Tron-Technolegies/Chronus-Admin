@@ -48,7 +48,7 @@ export const deleteSubCategory = (id) => API.delete(`/subcategories/${id}/delete
 
 // --- Orders ---
 export const getOrders = () => API.get("/view_orders/");
-export const updateOrderStatus = (id, data) => API.put(`/update_order/${id}/`, data);
+export const updateOrderStatus = (id, data) => API.post(`/update_order/${id}/`, data);
 
 // --- Coupons ---
 export const getCoupons = () => API.get("/view_coupons/");
