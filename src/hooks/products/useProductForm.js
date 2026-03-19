@@ -6,6 +6,8 @@ import {
   getCategories,
   getBrands,
   getSubCategories,
+  getFrames,
+  getMaterials,
 } from "../../api/api";
 import { getApiErrorMessage } from "../../utils/apiError";
 
@@ -24,25 +26,47 @@ const DEFAULT_FORM_DATA = {
   is_best_seller: false,
 };
 
+const EMPTY_SPEC_ROW = { key: "", value: "" };
+const EMPTY_SIZE_ROW = { size: "", price: "" };
+const EMPTY_COLOR_ROW = { color_name: "", image: null, preview: "" };
+
+const normalizeRelationIds = (value) => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      if (item && typeof item === "object") return item.id;
+      return item;
+    })
+    .filter((item) => item !== null && item !== undefined && item !== "")
+    .map((item) => String(item));
+};
+
 export default function useProductForm({ open, onClose, onSuccess, initialData }) {
   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
-  const [specs, setSpecs] = useState([{ key: "", value: "" }]);
-  const [sizes, setSizes] = useState([{ size: "", price: "" }]);
-  const [colors, setColors] = useState([{ color_name: "", image: null, preview: "" }]);
+  const [specs, setSpecs] = useState([EMPTY_SPEC_ROW]);
+  const [sizes, setSizes] = useState([EMPTY_SIZE_ROW]);
+  const [colors, setColors] = useState([EMPTY_COLOR_ROW]);
+  const [selectedFrameIds, setSelectedFrameIds] = useState([]);
+  const [selectedMaterialIds, setSelectedMaterialIds] = useState([]);
   const [preview, setPreview] = useState(null);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
+  const [frames, setFrames] = useState([]);
+  const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(false);
   const [galleryPreview, setGalleryPreview] = useState([]);
 
   useEffect(() => {
     const fetchLookups = async () => {
       try {
-        const [catRes, brandRes, subCatRes] = await Promise.all([
+        const [catRes, brandRes, subCatRes, frameRes, materialRes] = await Promise.all([
           getCategories(),
           getBrands(),
           getSubCategories(),
+          getFrames(),
+          getMaterials(),
         ]);
 
         setCategories(catRes.data.categories || []);
@@ -53,6 +77,10 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
           subCatRes.data.sub_categories ||
           (Array.isArray(subCatRes.data) ? subCatRes.data : []);
         setSubCategories(subList);
+        setFrames(Array.isArray(frameRes.data) ? frameRes.data : frameRes.data.frames || []);
+        setMaterials(
+          Array.isArray(materialRes.data) ? materialRes.data : materialRes.data.materials || [],
+        );
       } catch (error) {
         toast.error(getApiErrorMessage(error, "Failed to load product form data"));
       }
@@ -84,16 +112,20 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
         typeof existingSpec === "object" &&
         Object.keys(existingSpec).length > 0
       ) {
-        setSpecs(Object.entries(existingSpec).map(([key, value]) => ({ key, value: String(value) })));
+        setSpecs(
+          Object.entries(existingSpec).map(([key, value]) => ({ key, value: String(value) })),
+        );
       } else {
-        setSpecs([{ key: "", value: "" }]);
+        setSpecs([EMPTY_SPEC_ROW]);
       }
 
       const existingSizes = Array.isArray(initialData.sizes) ? initialData.sizes : [];
       if (existingSizes.length > 0) {
-        setSizes(existingSizes.map((item) => ({ size: item.size || "", price: String(item.price || "") })));
+        setSizes(
+          existingSizes.map((item) => ({ size: item.size || "", price: String(item.price || "") })),
+        );
       } else {
-        setSizes([{ size: "", price: "" }]);
+        setSizes([EMPTY_SIZE_ROW]);
       }
 
       const existingColors = Array.isArray(initialData.colors) ? initialData.colors : [];
@@ -106,16 +138,20 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
           })),
         );
       } else {
-        setColors([{ color_name: "", image: null, preview: "" }]);
+        setColors([EMPTY_COLOR_ROW]);
       }
 
+      setSelectedFrameIds(normalizeRelationIds(initialData.frames));
+      setSelectedMaterialIds(normalizeRelationIds(initialData.materials));
       setPreview(initialData.image || null);
       setGalleryPreview(initialData.gallery || []);
     } else {
       setFormData(DEFAULT_FORM_DATA);
-      setSpecs([{ key: "", value: "" }]);
-      setSizes([{ size: "", price: "" }]);
-      setColors([{ color_name: "", image: null, preview: "" }]);
+      setSpecs([EMPTY_SPEC_ROW]);
+      setSizes([EMPTY_SIZE_ROW]);
+      setColors([EMPTY_COLOR_ROW]);
+      setSelectedFrameIds([]);
+      setSelectedMaterialIds([]);
       setPreview(null);
       setGalleryPreview([]);
     }
@@ -170,7 +206,9 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
   };
 
   const removeSpecRow = (index) => {
-    setSpecs((prev) => (prev.length === 1 ? [{ key: "", value: "" }] : prev.filter((_, i) => i !== index)));
+    setSpecs((prev) =>
+      prev.length === 1 ? [EMPTY_SPEC_ROW] : prev.filter((_, i) => i !== index),
+    );
   };
 
   const addSizeRow = () => {
@@ -182,7 +220,9 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
   };
 
   const removeSizeRow = (index) => {
-    setSizes((prev) => (prev.length === 1 ? [{ size: "", price: "" }] : prev.filter((_, i) => i !== index)));
+    setSizes((prev) =>
+      prev.length === 1 ? [EMPTY_SIZE_ROW] : prev.filter((_, i) => i !== index),
+    );
   };
 
   const addColorRow = () => {
@@ -197,17 +237,13 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     if (!file) return;
     const nextPreview = URL.createObjectURL(file);
     setColors((prev) =>
-      prev.map((row, i) =>
-        i === index ? { ...row, image: file, preview: nextPreview } : row,
-      ),
+      prev.map((row, i) => (i === index ? { ...row, image: file, preview: nextPreview } : row)),
     );
   };
 
   const removeColorRow = (index) => {
     setColors((prev) =>
-      prev.length === 1
-        ? [{ color_name: "", image: null, preview: "" }]
-        : prev.filter((_, i) => i !== index),
+      prev.length === 1 ? [EMPTY_COLOR_ROW] : prev.filter((_, i) => i !== index),
     );
   };
 
@@ -229,7 +265,10 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     () =>
       sizes
         .filter((item) => item.size.trim() && item.price !== "")
-        .map((item) => ({ size: item.size.trim(), price: item.price })),
+        .map((item) => ({
+          size: item.size.trim(),
+          price: Number(item.price),
+        })),
     [sizes],
   );
 
@@ -253,20 +292,20 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     if (formData.category) data.append("category", formData.category);
     if (formData.subcategory) data.append("subcategory", formData.subcategory);
     if (formData.brand) data.append("brand", formData.brand);
-    data.append("price", formData.price);
+    data.append("price", Number(formData.price));
     data.append("description", formData.description);
     data.append("specification", JSON.stringify(specificationPayload));
     data.append("sizes", JSON.stringify(sizesPayload));
-    data.append(
-      "colors",
-      JSON.stringify(colorsPayload.map(({ color_name }) => ({ color_name }))),
-    );
-    data.append("stock", formData.stock);
+    data.append("colors", JSON.stringify(colorsPayload.map(({ color_name }) => ({ color_name }))));
+    if (formData.stock !== "") data.append("stock", Number(formData.stock));
     data.append("is_featured", formData.is_featured);
     data.append("is_best_seller", formData.is_best_seller);
+    data.append("frame_ids", JSON.stringify(selectedFrameIds));
+    data.append("material_ids", JSON.stringify(selectedMaterialIds));
+
     if (formData.image) data.append("image", formData.image);
     formData.gallery.forEach((file) => data.append("images", file));
-    colorsPayload.forEach((color, index) => {
+    colors.forEach((color, index) => {
       if (color.image) {
         data.append(`color_image_${index}`, color.image);
       }
@@ -294,10 +333,14 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     specs,
     sizes,
     colors,
+    selectedFrameIds,
+    selectedMaterialIds,
     preview,
     categories,
     brands,
     subCategories,
+    frames,
+    materials,
     loading,
     galleryPreview,
     handleChange,
@@ -317,6 +360,8 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     updateColorImage,
     removeColorRow,
     clearColorImage,
+    setSelectedFrameIds,
+    setSelectedMaterialIds,
     handleSubmit,
   };
 }

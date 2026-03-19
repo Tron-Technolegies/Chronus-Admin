@@ -12,6 +12,7 @@ import {
   IconButton,
   Checkbox,
   FormControlLabel,
+  OutlinedInput,
 } from "@mui/material";
 import { IoClose, IoCloudUploadOutline } from "react-icons/io5";
 import useProductForm from "../../hooks/products/useProductForm";
@@ -22,10 +23,14 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
     specs,
     sizes,
     colors,
+    selectedFrameIds,
+    selectedMaterialIds,
     preview,
     categories,
     brands,
     subCategories,
+    frames,
+    materials,
     loading,
     galleryPreview,
     handleChange,
@@ -45,8 +50,17 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
     updateColorImage,
     removeColorRow,
     clearColorImage,
+    setSelectedFrameIds,
+    setSelectedMaterialIds,
     handleSubmit,
   } = useProductForm({ open, onClose, onSuccess, initialData });
+
+  const renderSelectedNames = (selectedIds, options, emptyLabel) => {
+    if (!selectedIds.length) return emptyLabel;
+
+    const labelMap = new Map(options.map((option) => [String(option.id), option.name]));
+    return selectedIds.map((id) => labelMap.get(String(id)) || `#${id}`).join(", ");
+  };
 
   const inputStyles = {
     "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#fff" },
@@ -126,6 +140,56 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
               ))}
             </Select>
           </FormControl>
+        </Box>
+
+        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 2 }}>
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
+              Frames
+            </Typography>
+            <FormControl fullWidth>
+              <Select
+                multiple
+                displayEmpty
+                value={selectedFrameIds}
+                onChange={(e) => setSelectedFrameIds(e.target.value)}
+                input={<OutlinedInput sx={{ borderRadius: 2, bgcolor: "#fff" }} />}
+                renderValue={(selected) =>
+                  renderSelectedNames(selected, frames, "Select frames")
+                }
+              >
+                {frames.map((frame) => (
+                  <MenuItem key={frame.id} value={String(frame.id)}>
+                    {frame.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
+              Materials
+            </Typography>
+            <FormControl fullWidth>
+              <Select
+                multiple
+                displayEmpty
+                value={selectedMaterialIds}
+                onChange={(e) => setSelectedMaterialIds(e.target.value)}
+                input={<OutlinedInput sx={{ borderRadius: 2, bgcolor: "#fff" }} />}
+                renderValue={(selected) =>
+                  renderSelectedNames(selected, materials, "Select materials")
+                }
+              >
+                {materials.map((material) => (
+                  <MenuItem key={material.id} value={String(material.id)}>
+                    {material.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
 
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 2 }}>

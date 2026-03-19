@@ -45,6 +45,26 @@ export const getSubCategories = () => API.get("/subcategories/");
 export const addSubCategory = (data) => API.post("/subcategories/create/", data);
 export const updateSubCategory = (id, data) => API.put(`/subcategories/${id}/update/`, data);
 export const deleteSubCategory = (id) => API.delete(`/subcategories/${id}/delete/`);
+export const getFrames = () => API.get("/frames/");
+export const getMaterials = () => API.get("/materials/");
+export const addFrame = (data) =>
+  API.post("/frames/create/", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+export const updateFrame = (id, data) =>
+  API.put(`/frames/update/${id}/`, data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+export const deleteFrame = (id) => API.delete(`/frames/delete/${id}/`);
+export const addMaterial = (data) =>
+  API.post("/materials/create/", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+export const updateMaterial = (id, data) =>
+  API.put(`/materials/update/${id}/`, data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+export const deleteMaterial = (id) => API.delete(`/materials/delete/${id}/`);
 
 // --- Orders ---
 export const getOrders = () => API.get("/view_orders/");
