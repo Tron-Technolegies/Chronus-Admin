@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import HomeLayout from "./components/Layout/HomeLayout";
 import Dashboard from "./pages/Dashboard";
-import OrderTable from "./components/Orders/OrderTable";
+import Orders from "./pages/Orders";
 import Products from "./pages/Products";
 import Categories from "./pages/Categories";
 import Brands from "./pages/Brands";
@@ -11,6 +11,7 @@ import Coupons from "./pages/Coupons";
 import SubCategories from "./pages/SubCategories";
 import Frames from "./pages/Frames";
 import Materials from "./pages/Materials";
+import Suppliers from "./pages/Suppliers";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -40,9 +41,10 @@ function App() {
             <Route path="/frames" element={<Frames />} />
             <Route path="/materials" element={<Materials />} />
             <Route path="/customers" element={<Customers />} />
+            <Route path="/suppliers" element={<Suppliers />} />
             <Route path="/coupon" element={<Coupons />} />
             <Route path="/subcategories" element={<SubCategories />} />
-            <Route path="orders" element={<OrderTable />} />
+            <Route path="orders" element={<Orders />} />
           </Route>
         </Route>
 

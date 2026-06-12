@@ -101,6 +101,9 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
                 Brand
               </TableCell>
               <TableCell align="right" sx={{ fontWeight: 600 }}>
+                Supplier
+              </TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>
                 Price
               </TableCell>
               <TableCell align="right" sx={{ fontWeight: 600 }}>
@@ -132,14 +135,16 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
 
                   <TableCell align="right">{row.brand ? row.brand.name : "-"}</TableCell>
 
+                  <TableCell align="right">{row.supplier ? row.supplier.name : "-"}</TableCell>
+
                   <TableCell align="right">
                     <span className="font-semibold text-gray-700">${row.price}</span>
                   </TableCell>
 
                   <TableCell align="right">
                     <Chip
-                      label={row.stock > 0 ? `${row.stock} in stock` : "Out of Stock"}
-                      color={row.stock > 0 ? "success" : "error"}
+                      label={row.stock > 0 ? (row.stock < 10 ? `Low Stock (${row.stock})` : `${row.stock} in stock`) : "Out of Stock"}
+                      color={row.stock === 0 ? "error" : (row.stock < 10 ? "warning" : "success")}
                       size="small"
                       variant={row.stock > 0 ? "filled" : "outlined"}
                     />
@@ -180,7 +185,7 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 6, color: "gray" }}>
+                <TableCell colSpan={8} align="center" sx={{ py: 6, color: "gray" }}>
                   No products found
                 </TableCell>
               </TableRow>

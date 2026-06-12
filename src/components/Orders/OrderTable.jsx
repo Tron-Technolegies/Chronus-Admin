@@ -16,6 +16,10 @@ import {
   FormControl,
   Select,
   MenuItem,
+  Pagination,
+  Stack,
+  Typography,
+  Button,
 } from "@mui/material";
 import { FiEye, FiSearch, FiLink, FiCheck } from "react-icons/fi";
 import toast from "react-hot-toast";
@@ -25,8 +29,11 @@ import Loader from "../Loader";
 export default function OrderTable({ onView, statusFilter }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
   const [trackingInputs, setTrackingInputs] = useState({});
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 10;
 
   const fetchOrders = async () => {
     try {
@@ -109,15 +116,33 @@ export default function OrderTable({ onView, statusFilter }) {
 
   const filteredRows = rows.filter((row) => {
     const matchesSearch =
-      search === "" ||
-      row.id.toString().includes(search) ||
-      getUserName(row).toLowerCase().includes(search.toLowerCase()) ||
-      getEmail(row).toLowerCase().includes(search.toLowerCase());
+      activeSearch === "" ||
+      row.id.toString().includes(activeSearch) ||
+      getUserName(row).toLowerCase().includes(activeSearch.toLowerCase()) ||
+      getEmail(row).toLowerCase().includes(activeSearch.toLowerCase());
 
     const matchesStatus = !statusFilter || statusFilter === "All" || row.status === statusFilter.toLowerCase();
 
     return matchesSearch && matchesStatus;
   });
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeSearch, statusFilter]);
+
+  const handleSearchSubmit = () => {
+    setActiveSearch(searchInput);
+    setPage(1);
+  };
+
+  const clearSearch = () => {
+    setSearchInput("");
+    setActiveSearch("");
+    setPage(1);
+  };
+
+  const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+  const paginatedRows = filteredRows.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -140,12 +165,15 @@ export default function OrderTable({ onView, statusFilter }) {
 
   return (
     <>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5, mb: 2 }}>
         <TextField
           size="small"
           placeholder="Search by ID, User, or Email..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSearchSubmit();
+          }}
           sx={{
             width: 300,
             "& .MuiOutlinedInput-root": {
@@ -161,6 +189,22 @@ export default function OrderTable({ onView, statusFilter }) {
             ),
           }}
         />
+        <Button
+          size="small"
+          variant="contained"
+          onClick={handleSearchSubmit}
+          sx={{ bgcolor: "#3D1613", textTransform: "none", "&:hover": { bgcolor: "#2a0f0d" } }}
+        >
+          Search
+        </Button>
+        <Button
+          size="small"
+          variant="text"
+          onClick={clearSearch}
+          sx={{ color: "#666", textTransform: "none" }}
+        >
+          Clear
+        </Button>
       </Box>
 
       <TableContainer component={Paper} sx={{ borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
@@ -178,22 +222,19 @@ export default function OrderTable({ onView, statusFilter }) {
               <TableCell align="right" sx={{ fontWeight: 600 }}>
                 Status
               </TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600 }}>
-                Actions
-              </TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {filteredRows.length > 0 ? (
-              filteredRows.map((row) => {
+            {paginatedRows.length > 0 ? (
+              paginatedRows.map((row) => {
                 const trackingState = trackingInputs[row.id] || { value: "", saving: false };
                 return (
                   <TableRow
                     key={row.id}
                     hover
-                    onClick={() => onView && onView(row)}
                     sx={{ cursor: "pointer" }}
+                    onClick={() => onView && onView(row)}
                   >
                     <TableCell>#{row.id}</TableCell>
                     <TableCell>
@@ -213,7 +254,9 @@ export default function OrderTable({ onView, statusFilter }) {
                         <div className="space-y-1">
                           {row.items.map((item, index) => (
                             <div key={`${row.id}-item-${index}`} className="text-xs text-gray-700 leading-5">
-                              {item.product_name || `Product #${item.product || "-"}`} x {item.quantity || 0} (${parseFloat(item.price || 0).toFixed(2)})
+                              {item.product_name || `Product #${item.product || "-"}`} 
+                              {item.supplier && <span className="text-gray-500 italic"> ({item.supplier})</span>}
+                              {" "}x {item.quantity || 0} (${parseFloat(item.price || 0).toFixed(2)})
                             </div>
                           ))}
                         </div>
@@ -295,21 +338,6 @@ export default function OrderTable({ onView, statusFilter }) {
                         </FormControl>
                       </Box>
                     </TableCell>
-
-                    <TableCell align="right">
-                      <Tooltip title="View Order Details">
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onView && onView(row);
-                          }}
-                          sx={{ color: "#0E45B7", bgcolor: "#eff6ff", "&:hover": { bgcolor: "#dbeafe" } }}
-                        >
-                          <FiEye size={18} />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
                   </TableRow>
                 );
               })
@@ -323,6 +351,20 @@ export default function OrderTable({ onView, statusFilter }) {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {totalPages > 1 && (
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 3, mb: 1, px: 2 }}>
+          <Typography variant="body2" color="textSecondary">
+            Showing {(page - 1) * rowsPerPage + 1} to {Math.min(page * rowsPerPage, filteredRows.length)} of {filteredRows.length} orders
+          </Typography>
+          <Pagination 
+            count={totalPages} 
+            page={page} 
+            onChange={(_, val) => setPage(val)} 
+            color="primary" 
+          />
+        </Stack>
+      )}
     </>
   );
 }

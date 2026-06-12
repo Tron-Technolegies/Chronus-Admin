@@ -1,20 +1,37 @@
 import React, { useState } from "react";
 import OrderTable from "../components/Orders/OrderTable";
 import OrderModal from "../components/Orders/OrderModal";
+import toast from "react-hot-toast";
+import { getOrderDetail } from "../api/api";
 
 export default function Orders() {
   const [viewData, setViewData] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [statusFilter, setStatusFilter] = useState("All");
+  const [detailLoading, setDetailLoading] = useState(false);
 
   const handleSuccess = () => {
     setRefreshKey((prev) => prev + 1);
   };
 
-  const handleView = (row) => {
-    setViewData(row);
+  const handleView = async (row) => {
+    if (!row?.id) return;
+    toast.loading("Fetching order details...", { id: `order-${row.id}` }); // Debug feedback
     setModalOpen(true);
+    setDetailLoading(true);
+    setViewData(row);
+
+    try {
+      const res = await getOrderDetail(row.id);
+      setViewData(res.data);
+      toast.dismiss(`order-${row.id}`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch order details", { id: `order-${row.id}` });
+    } finally {
+      setDetailLoading(false);
+    }
   };
 
   const tabs = ["All", "Pending", "Processing", "Shipped", "Completed", "Cancelled"];
@@ -48,14 +65,17 @@ export default function Orders() {
 
       <OrderModal
         open={modalOpen}
+        loading={detailLoading}
         onClose={() => {
           setModalOpen(false);
           setViewData(null);
+          setDetailLoading(false);
         }}
         onSuccess={() => {
           handleSuccess();
           setModalOpen(false);
           setViewData(null);
+          setDetailLoading(false);
         }}
         initialData={viewData}
       />

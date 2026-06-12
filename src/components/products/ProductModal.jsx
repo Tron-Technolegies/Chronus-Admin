@@ -31,6 +31,7 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
     subCategories,
     frames,
     materials,
+    suppliers,
     loading,
     galleryPreview,
     handleChange,
@@ -128,18 +129,33 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
           </Box>
         </Box>
 
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
-            Sub Category
-          </Typography>
-          <FormControl fullWidth>
-            <Select name="subcategory" value={formData.subcategory} onChange={handleChange} displayEmpty sx={{ borderRadius: 2 }}>
-              <MenuItem value="">None</MenuItem>
-              {subCategories.map((sc) => (
-                <MenuItem key={sc.id} value={sc.id}>{sc.name}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 2 }}>
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
+              Sub Category
+            </Typography>
+            <FormControl fullWidth>
+              <Select name="subcategory" value={formData.subcategory} onChange={handleChange} displayEmpty sx={{ borderRadius: 2 }}>
+                <MenuItem value="">None</MenuItem>
+                {subCategories.map((sc) => (
+                  <MenuItem key={sc.id} value={sc.id}>{sc.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
+              Supplier
+            </Typography>
+            <FormControl fullWidth>
+              <Select name="supplier" value={formData.supplier} onChange={handleChange} displayEmpty sx={{ borderRadius: 2 }}>
+                <MenuItem value="">None</MenuItem>
+                {suppliers.map((sup) => (
+                  <MenuItem key={sup.id} value={sup.id}>{sup.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
 
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 2 }}>

@@ -18,26 +18,28 @@ import {
   TableHead,
   TableRow,
   Paper,
+  CircularProgress,
 } from "@mui/material";
-import { IoClose } from "react-icons/io5";
+import { FiX } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { updateOrderStatus } from "../../api/api";
 
-export default function OrderModal({ open, onClose, onSuccess, initialData }) {
+export default function OrderModal({ open, onClose, onSuccess, initialData, loading = false }) {
   const [status, setStatus] = useState("");
   const [trackingLink, setTrackingLink] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (initialData) {
       setStatus(initialData.status || "pending");
-      setTrackingLink(initialData.tracking_link || initialData.tracking_id || "");
+      setTrackingLink(initialData.tracking_url || initialData.tracking_link || initialData.tracking_id || "");
     }
   }, [initialData, open]);
 
   const handleSubmit = async () => {
     if (!initialData?.id) return;
-    setLoading(true);
+
+    setSaving(true);
     try {
       await updateOrderStatus(initialData.id, {
         status,
@@ -50,7 +52,7 @@ export default function OrderModal({ open, onClose, onSuccess, initialData }) {
       console.error(error);
       toast.error("Failed to update order");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -60,7 +62,8 @@ export default function OrderModal({ open, onClose, onSuccess, initialData }) {
     },
   };
 
-  if (!initialData) return null;
+  const orderDate = initialData?.date || initialData?.created_at;
+  const totalAmount = initialData?.total_price || initialData?.total_amount || 0;
 
   return (
     <Dialog
@@ -75,92 +78,110 @@ export default function OrderModal({ open, onClose, onSuccess, initialData }) {
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", px: 2, pt: 1 }}>
         <Box>
           <Typography variant="h5" sx={{ fontFamily: "serif", fontWeight: 500 }}>
-            Order #{initialData.id}
+            {initialData ? `Order #${initialData.id}` : "Loading…"}
           </Typography>
           <Typography variant="body2" color="textSecondary">
-            Placed on {new Date(initialData.created_at).toLocaleDateString()}
+            {orderDate ? `Placed on ${new Date(orderDate).toLocaleDateString()}` : ""}
           </Typography>
         </Box>
         <IconButton onClick={onClose}>
-          <IoClose />
+          <FiX />
         </IconButton>
       </Box>
 
       <DialogContent sx={{ mt: 1 }}>
-        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" }, gap: 3 }}>
-          <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: "#333" }}>
-              Order Items
-            </Typography>
-            <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e0e0e0", borderRadius: 2 }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Product</TableCell>
-                    <TableCell align="right">Qty</TableCell>
-                    <TableCell align="right">Price</TableCell>
-                    <TableCell align="right">Total</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {initialData.items?.map((item, index) => {
-                    const price = parseFloat(item.price || 0);
-                    const qty = Number(item.quantity || 0);
-                    return (
-                      <TableRow key={index}>
-                        <TableCell>{item.product_name || `Product #${item.product || "-"}`}</TableCell>
-                        <TableCell align="right">{qty}</TableCell>
-                        <TableCell align="right">${price.toFixed(2)}</TableCell>
-                        <TableCell align="right">${(price * qty).toFixed(2)}</TableCell>
-                      </TableRow>
-                    );
-                  })}
-                  {!initialData.items?.length && (
-                    <TableRow>
-                      <TableCell colSpan={4} align="center">
-                        No items found
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
-            <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
-              <Typography variant="h6">Total: ${parseFloat(initialData.total_amount || 0).toFixed(2)}</Typography>
-            </Box>
+        {loading || !initialData ? (
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 240 }}>
+            <CircularProgress />
           </Box>
-
-          <Box>
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
-                Order Status
+        ) : (
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" }, gap: 3 }}>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: "#333" }}>
+                Order Items
               </Typography>
-              <FormControl fullWidth>
-                <Select value={status} onChange={(e) => setStatus(e.target.value)} sx={{ borderRadius: 2 }}>
-                  <MenuItem value="pending">Pending</MenuItem>
-                  <MenuItem value="processing">Processing</MenuItem>
-                  <MenuItem value="shipped">Shipped</MenuItem>
-                  <MenuItem value="completed">Completed</MenuItem>
-                  <MenuItem value="cancelled">Cancelled</MenuItem>
-                </Select>
-              </FormControl>
+              <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e0e0e0", borderRadius: 2 }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Product</TableCell>
+                      <TableCell align="right">Qty</TableCell>
+                      <TableCell align="right">Price</TableCell>
+                      <TableCell align="right">Total</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {initialData.items?.map((item, index) => {
+                      const price = parseFloat(item.price || 0);
+                      const qty = Number(item.quantity || 0);
+
+                      return (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <Box>
+                              <Typography variant="body2">
+                                {item.product_name || `Product #${item.product || "-"}`}
+                              </Typography>
+                              {(item.size || item.frame || item.material) && (
+                                <Typography variant="caption" color="text.secondary">
+                                  {[item.size, item.frame, item.material].filter(Boolean).join(" / ")}
+                                </Typography>
+                              )}
+                            </Box>
+                          </TableCell>
+                          <TableCell align="right">{qty}</TableCell>
+                          <TableCell align="right">${price.toFixed(2)}</TableCell>
+                          <TableCell align="right">${parseFloat(item.total ?? price * qty).toFixed(2)}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {!initialData.items?.length && (
+                      <TableRow>
+                        <TableCell colSpan={4} align="center">
+                          No items found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+
+              <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+                <Typography variant="h6">Total: ${parseFloat(totalAmount || 0).toFixed(2)}</Typography>
+              </Box>
             </Box>
 
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
-                Tracking Link
-              </Typography>
-              <TextField
-                placeholder="Enter tracking URL"
-                fullWidth
-                value={trackingLink}
-                onChange={(e) => setTrackingLink(e.target.value)}
-                sx={inputStyles}
-              />
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
+                  Order Status
+                </Typography>
+                <FormControl fullWidth>
+                  <Select value={status} onChange={(e) => setStatus(e.target.value)} sx={{ borderRadius: 2 }}>
+                    <MenuItem value="pending">Pending</MenuItem>
+                    <MenuItem value="processing">Processing</MenuItem>
+                    <MenuItem value="shipped">Shipped</MenuItem>
+                    <MenuItem value="completed">Completed</MenuItem>
+                    <MenuItem value="cancelled">Cancelled</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
+                  Tracking Link
+                </Typography>
+                <TextField
+                  placeholder="Enter tracking URL"
+                  fullWidth
+                  value={trackingLink}
+                  onChange={(e) => setTrackingLink(e.target.value)}
+                  sx={inputStyles}
+                />
+              </Box>
             </Box>
           </Box>
-        </Box>
+        )}
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 3 }}>
@@ -170,7 +191,7 @@ export default function OrderModal({ open, onClose, onSuccess, initialData }) {
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={loading}
+          disabled={loading || saving}
           sx={{
             bgcolor: "#3D1613",
             color: "#F5F5F3",
@@ -182,7 +203,7 @@ export default function OrderModal({ open, onClose, onSuccess, initialData }) {
             "&:hover": { bgcolor: "#2a0f0d" },
           }}
         >
-          {loading ? "Updating..." : "Update Order"}
+          {saving ? "Updating..." : "Update Order"}
         </Button>
       </DialogActions>
     </Dialog>

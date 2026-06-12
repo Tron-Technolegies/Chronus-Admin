@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { BsGrid, BsCart3, BsBoxSeam, BsPeople, BsGear } from "react-icons/bs";
+import { BsGrid, BsCart3, BsBoxSeam, BsPeople, BsGear, BsTruck } from "react-icons/bs";
 import { GoStack } from "react-icons/go";
 import { LuTag } from "react-icons/lu";
 import { IoTicketOutline } from "react-icons/io5";
@@ -30,12 +30,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: "Materials", path: "/materials", icon: BsLayers },
     { name: "Orders", path: "/orders", icon: BsCart3 },
     { name: "Customers", path: "/customers", icon: BsPeople },
+    { name: "Suppliers", path: "/suppliers", icon: BsTruck },
     { name: "Coupons", path: "/coupon", icon: IoTicketOutline },
     // { name: "Settings", path: "/settings", icon: BsGear },
   ];
 
 
   return (
+    <>
+    <style>{`
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    `}</style>
     <aside
       className={`fixed left-0 top-0 z-50 h-screen w-72 flex flex-col
       transition-transform duration-300 ease-in-out
@@ -52,7 +58,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           <IoMdClose size={24} />
         </button>
       </div>
-      <nav className="flex-1 overflow-y-auto px-4 py-6">
+      <nav className="flex-1 overflow-y-auto px-4 py-6 no-scrollbar">
         <ul className="flex flex-col gap-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -87,6 +93,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         </button>
       </div>
     </aside>
+    </>
   );
 };
 

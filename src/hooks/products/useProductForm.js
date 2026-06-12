@@ -8,6 +8,7 @@ import {
   getSubCategories,
   getFrames,
   getMaterials,
+  getSuppliers,
 } from "../../api/api";
 import { getApiErrorMessage } from "../../utils/apiError";
 
@@ -16,6 +17,7 @@ const DEFAULT_FORM_DATA = {
   category: "",
   subcategory: "",
   brand: "",
+  supplier: "",
   price: "",
   description: "",
   stock: "",
@@ -55,22 +57,25 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
   const [subCategories, setSubCategories] = useState([]);
   const [frames, setFrames] = useState([]);
   const [materials, setMaterials] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [galleryPreview, setGalleryPreview] = useState([]);
 
   useEffect(() => {
     const fetchLookups = async () => {
       try {
-        const [catRes, brandRes, subCatRes, frameRes, materialRes] = await Promise.all([
+        const [catRes, brandRes, subCatRes, frameRes, materialRes, supplierRes] = await Promise.all([
           getCategories(),
           getBrands(),
           getSubCategories(),
           getFrames(),
           getMaterials(),
+          getSuppliers(),
         ]);
 
         setCategories(catRes.data.categories || []);
         setBrands(brandRes.data.brands || []);
+        setSuppliers(supplierRes.data || []);
 
         const subList =
           subCatRes.data.subcategories ||
@@ -96,6 +101,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
         category: initialData.category?.id || "",
         subcategory: initialData.subcategory?.id || "",
         brand: initialData.brand?.id || "",
+        supplier: initialData.supplier?.id || "",
         price: initialData.price || "",
         description: initialData.description || "",
         stock: initialData.stock || "",
@@ -292,6 +298,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     if (formData.category) data.append("category", formData.category);
     if (formData.subcategory) data.append("subcategory", formData.subcategory);
     if (formData.brand) data.append("brand", formData.brand);
+    if (formData.supplier) data.append("supplier", formData.supplier);
     data.append("price", Number(formData.price));
     data.append("description", formData.description);
     data.append("specification", JSON.stringify(specificationPayload));
@@ -341,6 +348,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     subCategories,
     frames,
     materials,
+    suppliers,
     loading,
     galleryPreview,
     handleChange,
