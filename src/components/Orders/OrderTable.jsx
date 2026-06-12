@@ -255,7 +255,11 @@ export default function OrderTable({ onView, statusFilter }) {
                           {row.items.map((item, index) => (
                             <div key={`${row.id}-item-${index}`} className="text-xs text-gray-700 leading-5">
                               {item.product_name || `Product #${item.product || "-"}`} 
-                              {item.supplier && <span className="text-gray-500 italic"> ({item.supplier})</span>}
+                              {item.supplier && (
+                                <span className="text-gray-500 italic"> 
+                                  ({typeof item.supplier === 'object' ? item.supplier.name : item.supplier})
+                                </span>
+                              )}
                               {" "}x {item.quantity || 0} (${parseFloat(item.price || 0).toFixed(2)})
                             </div>
                           ))}
@@ -331,7 +335,6 @@ export default function OrderTable({ onView, statusFilter }) {
                           >
                             <MenuItem value="pending">Pending</MenuItem>
                             <MenuItem value="processing">Processing</MenuItem>
-                            <MenuItem value="shipped">Shipped</MenuItem>
                             <MenuItem value="completed">Completed</MenuItem>
                             <MenuItem value="cancelled">Cancelled</MenuItem>
                           </Select>

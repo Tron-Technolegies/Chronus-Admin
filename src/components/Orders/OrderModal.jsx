@@ -22,12 +22,32 @@ import {
 } from "@mui/material";
 import { FiX } from "react-icons/fi";
 import toast from "react-hot-toast";
-import { updateOrderStatus } from "../../api/api";
+import { updateOrderStatus, createShipment } from "../../api/api";
 
 export default function OrderModal({ open, onClose, onSuccess, initialData, loading = false }) {
   const [status, setStatus] = useState("");
   const [trackingLink, setTrackingLink] = useState("");
   const [saving, setSaving] = useState(false);
+  const [shipping, setShipping] = useState(false);
+
+  const handleCreateShipment = async () => {
+    if (!initialData?.id) return;
+    setShipping(true);
+    try {
+      const res = await createShipment(initialData.id);
+      toast.success(res.data.message || "Shipment created successfully");
+      
+      if (res.data.status) setStatus(res.data.status);
+      if (res.data.tracking_link) setTrackingLink(res.data.tracking_link);
+      
+      onSuccess();
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.error || "Failed to create shipment");
+    } finally {
+      setShipping(false);
+    }
+  };
 
   useEffect(() => {
     if (initialData) {
@@ -123,8 +143,14 @@ export default function OrderModal({ open, onClose, onSuccess, initialData, load
                                 {item.product_name || `Product #${item.product || "-"}`}
                               </Typography>
                               {(item.size || item.frame || item.material) && (
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography variant="caption" color="text.secondary" display="block">
                                   {[item.size, item.frame, item.material].filter(Boolean).join(" / ")}
+                                </Typography>
+                              )}
+                              {item.supplier && (typeof item.supplier === 'object' ? item.supplier.name : item.supplier) && (
+                                <Typography variant="caption" sx={{ color: "#0056b3", mt: 0.5, display: "block" }}>
+                                  Supplier: {typeof item.supplier === 'object' ? item.supplier.name : item.supplier} 
+                                  {typeof item.supplier === 'object' && item.supplier.phone ? ` (${item.supplier.phone})` : ""}
                                 </Typography>
                               )}
                             </Box>
@@ -160,11 +186,26 @@ export default function OrderModal({ open, onClose, onSuccess, initialData, load
                   <Select value={status} onChange={(e) => setStatus(e.target.value)} sx={{ borderRadius: 2 }}>
                     <MenuItem value="pending">Pending</MenuItem>
                     <MenuItem value="processing">Processing</MenuItem>
-                    <MenuItem value="shipped">Shipped</MenuItem>
                     <MenuItem value="completed">Completed</MenuItem>
                     <MenuItem value="cancelled">Cancelled</MenuItem>
                   </Select>
                 </FormControl>
+                {status === "processing" && (
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={handleCreateShipment}
+                    disabled={shipping}
+                    sx={{
+                      mt: 2,
+                      borderColor: "#3D1613",
+                      color: "#3D1613",
+                      "&:hover": { borderColor: "#2a0f0d", bgcolor: "rgba(61, 22, 19, 0.04)" }
+                    }}
+                  >
+                    {shipping ? "Creating Shipment..." : "Create Shipment"}
+                  </Button>
+                )}
               </Box>
 
               <Box>

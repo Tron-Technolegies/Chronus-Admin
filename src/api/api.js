@@ -70,6 +70,7 @@ export const deleteMaterial = (id) => API.delete(`/materials/delete/${id}/`);
 export const getOrders = () => API.get("/view_orders/");
 export const getOrderDetail = (id) => API.get(`/order_detail_api/${id}`);
 export const updateOrderStatus = (id, data) => API.post(`/update_order/${id}`, data);
+export const createShipment = (id) => API.post(`/create_shipment/${id}/`);
 
 // --- Coupons ---
 export const getCoupons = () => API.get("/view_coupons/");
@@ -83,6 +84,9 @@ export const deleteCustomer = (id) => API.delete(`/delete_users/${id}/`);
 
 // --- Dashboard ---
 export const getDashboardStats = () => API.get("/dashboard_stats/");
+
+// --- Notifications ---
+export const getNotifications = () => API.get("/notifications/");
 
 // --- Suppliers ---
 export const getSuppliers = () => API.get("/supplier_list/");
