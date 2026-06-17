@@ -23,7 +23,17 @@ export default function useProductsTable({ filters = {}, refreshKey }) {
 
   useEffect(() => {
     setPage(1);
-  }, [search, filters.category, filters.subcategory, filters.min_price, filters.max_price]);
+  }, [
+    search,
+    filters.category,
+    filters.subcategory,
+    filters.min_price,
+    filters.max_price,
+    filters.is_published,
+    filters.is_featured,
+    filters.is_best_seller,
+    filters.low_stock,
+  ]);
 
   const queryParams = useMemo(() => {
     const params = {
@@ -36,9 +46,24 @@ export default function useProductsTable({ filters = {}, refreshKey }) {
     if (filters.subcategory) params.subcategory = filters.subcategory;
     if (filters.min_price) params.min_price = filters.min_price;
     if (filters.max_price) params.max_price = filters.max_price;
+    if (filters.is_published) params.is_published = filters.is_published;
+    if (filters.is_featured) params.is_featured = filters.is_featured;
+    if (filters.is_best_seller) params.is_best_seller = filters.is_best_seller;
+    if (filters.low_stock) params.low_stock = filters.low_stock;
 
     return params;
-  }, [page, search, filters.category, filters.subcategory, filters.min_price, filters.max_price]);
+  }, [
+    page,
+    search,
+    filters.category,
+    filters.subcategory,
+    filters.min_price,
+    filters.max_price,
+    filters.is_published,
+    filters.is_featured,
+    filters.is_best_seller,
+    filters.low_stock,
+  ]);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);

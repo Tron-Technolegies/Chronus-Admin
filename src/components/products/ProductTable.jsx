@@ -128,7 +128,20 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
                   </TableCell>
 
                   <TableCell>
-                    <span className="font-medium text-gray-900">{row.name}</span>
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                      <span className="font-medium text-gray-900">{row.name}</span>
+                      <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                        {row.is_published === false && (
+                          <Chip label="Hidden" size="small" sx={{ height: 20, fontSize: "0.65rem", bgcolor: "#f3f4f6", color: "#4b5563", fontWeight: 600 }} />
+                        )}
+                        {row.is_featured && (
+                          <Chip label="Featured" size="small" sx={{ height: 20, fontSize: "0.65rem", bgcolor: "#fef08a", color: "#854d0e", fontWeight: 600 }} />
+                        )}
+                        {row.is_best_seller && (
+                          <Chip label="Best Seller" size="small" sx={{ height: 20, fontSize: "0.65rem", bgcolor: "#bfdbfe", color: "#1e3a8a", fontWeight: 600 }} />
+                        )}
+                      </Box>
+                    </Box>
                   </TableCell>
 
                   <TableCell align="right">{row.category ? row.category.name : "-"}</TableCell>

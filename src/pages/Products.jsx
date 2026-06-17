@@ -26,6 +26,7 @@ export default function Products() {
     updateSubCategoryFilter,
     updateMinPriceFilter,
     updateMaxPriceFilter,
+    updateDropdownFilter,
     applyFilters,
     clearFilters,
   } = useProductsPage();
@@ -112,6 +113,57 @@ export default function Products() {
               onChange={(e) => updateMaxPriceFilter(e.target.value)}
               className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3D1613]"
             />
+          </div>
+
+          <div className="flex flex-col gap-1 min-w-[180px]">
+            <label className="text-xs text-gray-500 font-medium">Status</label>
+            <select
+              value={filterInputs.is_published}
+              onChange={(e) => updateDropdownFilter("is_published", e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3D1613] bg-white"
+            >
+              <option value="">All Statuses</option>
+              <option value="true">Published</option>
+              <option value="false">Hidden</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1 min-w-[180px]">
+            <label className="text-xs text-gray-500 font-medium">Featured</label>
+            <select
+              value={filterInputs.is_featured}
+              onChange={(e) => updateDropdownFilter("is_featured", e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3D1613] bg-white"
+            >
+              <option value="">All</option>
+              <option value="true">Featured Only</option>
+              <option value="false">Not Featured</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1 min-w-[180px]">
+            <label className="text-xs text-gray-500 font-medium">Best Seller</label>
+            <select
+              value={filterInputs.is_best_seller}
+              onChange={(e) => updateDropdownFilter("is_best_seller", e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3D1613] bg-white"
+            >
+              <option value="">All</option>
+              <option value="true">Best Seller Only</option>
+              <option value="false">Not Best Seller</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1 min-w-[180px]">
+            <label className="text-xs text-gray-500 font-medium">Stock Level</label>
+            <select
+              value={filterInputs.low_stock}
+              onChange={(e) => updateDropdownFilter("low_stock", e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3D1613] bg-white"
+            >
+              <option value="">All</option>
+              <option value="true">Low Stock Only</option>
+            </select>
           </div>
 
           <button

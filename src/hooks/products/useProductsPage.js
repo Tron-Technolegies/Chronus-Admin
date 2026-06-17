@@ -10,12 +10,20 @@ export default function useProductsPage() {
     subcategory: "",
     min_price: "",
     max_price: "",
+    is_published: "",
+    is_featured: "",
+    is_best_seller: "",
+    low_stock: "",
   });
   const [filterInputs, setFilterInputs] = useState({
     category: "",
     subcategory: "",
     min_price: "",
     max_price: "",
+    is_published: "",
+    is_featured: "",
+    is_best_seller: "",
+    low_stock: "",
   });
 
   const handleSuccess = () => {
@@ -63,18 +71,36 @@ export default function useProductsPage() {
     setFilterInputs((prev) => ({ ...prev, max_price: value }));
   };
 
+  const updateDropdownFilter = (key, value) => {
+    setFilterInputs((prev) => ({ ...prev, [key]: value }));
+  };
+
   const applyFilters = () => {
     setFilters({
       category: filterInputs.category.trim(),
       subcategory: filterInputs.subcategory.trim(),
       min_price: filterInputs.min_price.trim(),
       max_price: filterInputs.max_price.trim(),
+      is_published: filterInputs.is_published,
+      is_featured: filterInputs.is_featured,
+      is_best_seller: filterInputs.is_best_seller,
+      low_stock: filterInputs.low_stock,
     });
   };
 
   const clearFilters = () => {
-    setFilters({ category: "", subcategory: "", min_price: "", max_price: "" });
-    setFilterInputs({ category: "", subcategory: "", min_price: "", max_price: "" });
+    const empty = {
+      category: "",
+      subcategory: "",
+      min_price: "",
+      max_price: "",
+      is_published: "",
+      is_featured: "",
+      is_best_seller: "",
+      low_stock: "",
+    };
+    setFilters(empty);
+    setFilterInputs(empty);
   };
 
   const activeFilterCount = useMemo(
@@ -101,6 +127,7 @@ export default function useProductsPage() {
     updateSubCategoryFilter,
     updateMinPriceFilter,
     updateMaxPriceFilter,
+    updateDropdownFilter,
     applyFilters,
     clearFilters,
   };

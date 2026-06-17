@@ -208,10 +208,14 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
           </Box>
         </Box>
 
-        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 2 }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 2, mb: 2 }}>
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Price</Typography>
             <TextField placeholder="$0.00" name="price" type="number" fullWidth value={formData.price} onChange={handleChange} sx={inputStyles} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Service Cost</Typography>
+            <TextField placeholder="$0.00" name="supplier_cost" type="number" fullWidth value={formData.supplier_cost} onChange={handleChange} sx={inputStyles} />
           </Box>
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Stock</Typography>
@@ -457,6 +461,16 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
         </Box>
 
         <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={formData.is_published}
+                onChange={(e) => handleToggleFlag("is_published", e.target.checked)}
+                sx={{ color: "#3D1613", "&.Mui-checked": { color: "#3D1613" } }}
+              />
+            }
+            label={<Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#333" }}>Published</Typography>}
+          />
           <FormControlLabel
             control={
               <Checkbox

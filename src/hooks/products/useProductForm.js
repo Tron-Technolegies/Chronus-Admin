@@ -19,6 +19,7 @@ const DEFAULT_FORM_DATA = {
   brand: "",
   supplier: "",
   price: "",
+  supplier_cost: "",
   description: "",
   stock: "",
   status: "In Stock",
@@ -26,6 +27,7 @@ const DEFAULT_FORM_DATA = {
   gallery: [],
   is_featured: false,
   is_best_seller: false,
+  is_published: true,
 };
 
 const EMPTY_SPEC_ROW = { key: "", value: "" };
@@ -110,6 +112,8 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
         gallery: [],
         is_featured: initialData.is_featured || false,
         is_best_seller: initialData.is_best_seller || false,
+        is_published: initialData.is_published !== undefined ? initialData.is_published : true,
+        supplier_cost: initialData.supplier_cost || "",
       });
 
       const existingSpec = initialData.specification;
@@ -307,6 +311,8 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     if (formData.stock !== "") data.append("stock", Number(formData.stock));
     data.append("is_featured", formData.is_featured);
     data.append("is_best_seller", formData.is_best_seller);
+    data.append("is_published", formData.is_published);
+    if (formData.supplier_cost) data.append("supplier_cost", Number(formData.supplier_cost));
     data.append("frame_ids", JSON.stringify(selectedFrameIds));
     data.append("material_ids", JSON.stringify(selectedMaterialIds));
 
