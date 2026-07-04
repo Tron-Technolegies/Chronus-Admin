@@ -224,6 +224,28 @@ export default function ProductModal({ open, onClose, onSuccess, initialData }) 
         </Box>
 
         <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: "#333" }}>DHL Shipping Dimensions</Typography>
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 2 }}>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Weight (kg)</Typography>
+              <TextField placeholder="0.00" name="weight" type="number" inputProps={{ step: "0.01", min: "0" }} fullWidth value={formData.weight} onChange={handleChange} sx={inputStyles} />
+            </Box>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Length (cm)</Typography>
+              <TextField placeholder="0.00" name="length" type="number" inputProps={{ step: "0.01", min: "0" }} fullWidth value={formData.length} onChange={handleChange} sx={inputStyles} />
+            </Box>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Width (cm)</Typography>
+              <TextField placeholder="0.00" name="width" type="number" inputProps={{ step: "0.01", min: "0" }} fullWidth value={formData.width} onChange={handleChange} sx={inputStyles} />
+            </Box>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Height (cm)</Typography>
+              <TextField placeholder="0.00" name="height" type="number" inputProps={{ step: "0.01", min: "0" }} fullWidth value={formData.height} onChange={handleChange} sx={inputStyles} />
+            </Box>
+          </Box>
+        </Box>
+
+        <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Description</Typography>
           <TextField
             placeholder="Product description..."

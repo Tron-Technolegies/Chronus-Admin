@@ -38,7 +38,9 @@ export default function OrderTable({ onView, statusFilter }) {
   const fetchOrders = async () => {
     try {
       const res = await getOrders();
-      setRows(res.data.orders || []);
+      const orders = res.data.orders || [];
+      const sortedOrders = [...orders].sort((a, b) => b.id - a.id);
+      setRows(sortedOrders);
     } catch (error) {
       toast.error("Failed to fetch orders");
     } finally {

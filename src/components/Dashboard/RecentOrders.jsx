@@ -56,7 +56,7 @@ const RecentOrders = () => {
                 const status = (order.status || "").toLowerCase();
                 const colorClass = statusStyles[status] || "text-gray-600 bg-gray-100";
                 const customerName =
-                  order.customer_name ||
+                  order.user ||
                   (order.user
                     ? `${order.user.first_name || ""} ${order.user.last_name || ""}`.trim()
                     : "—");

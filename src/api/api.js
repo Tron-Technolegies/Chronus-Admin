@@ -70,7 +70,7 @@ export const deleteMaterial = (id) => API.delete(`/materials/delete/${id}/`);
 export const getOrders = () => API.get("/view_orders/");
 export const getOrderDetail = (id) => API.get(`/order_detail_api/${id}`);
 export const updateOrderStatus = (id, data) => API.post(`/update_order/${id}/`, data);
-export const createShipment = (id) => API.post(`/create_shipment/${id}/`);
+export const createShipment = (id) => API.post(`/orders/${id}/create-shipment/`);
 
 // --- Coupons ---
 export const getCoupons = () => API.get("/view_coupons/");

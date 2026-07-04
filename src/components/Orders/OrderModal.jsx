@@ -186,11 +186,12 @@ export default function OrderModal({ open, onClose, onSuccess, initialData, load
                   <Select value={status} onChange={(e) => setStatus(e.target.value)} sx={{ borderRadius: 2 }}>
                     <MenuItem value="pending">Pending</MenuItem>
                     <MenuItem value="processing">Processing</MenuItem>
+                    <MenuItem value="shipped">Shipped</MenuItem>
                     <MenuItem value="completed">Completed</MenuItem>
                     <MenuItem value="cancelled">Cancelled</MenuItem>
                   </Select>
                 </FormControl>
-                {status === "processing" && (
+                {status === "processing" && initialData?.payment_status === "paid" && (!initialData?.shipment_id) && (
                   <Button
                     variant="outlined"
                     fullWidth
@@ -220,6 +221,48 @@ export default function OrderModal({ open, onClose, onSuccess, initialData, load
                   sx={inputStyles}
                 />
               </Box>
+
+              {(initialData?.carrier || initialData?.tracking_number || initialData?.tracking_link || initialData?.shipment_id) && (
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: "#333" }}>
+                    Shipment Information
+                  </Typography>
+                  <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, display: "flex", flexDirection: "column", gap: 1.5 }}>
+                    {initialData.carrier && (
+                      <Box>
+                        <Typography variant="caption" color="textSecondary" display="block">Carrier:</Typography>
+                        <Typography variant="body2">{initialData.carrier}</Typography>
+                      </Box>
+                    )}
+                    {initialData.tracking_number && (
+                      <Box>
+                        <Typography variant="caption" color="textSecondary" display="block">Tracking Number:</Typography>
+                        <Typography variant="body2">{initialData.tracking_number}</Typography>
+                      </Box>
+                    )}
+                    {initialData.shipment_id && (
+                      <Box>
+                        <Typography variant="caption" color="textSecondary" display="block">Shipment ID:</Typography>
+                        <Typography variant="body2">{initialData.shipment_id}</Typography>
+                      </Box>
+                    )}
+                    {initialData.status && (
+                      <Box>
+                        <Typography variant="caption" color="textSecondary" display="block">Status:</Typography>
+                        <Typography variant="body2" sx={{ textTransform: "capitalize" }}>{initialData.status}</Typography>
+                      </Box>
+                    )}
+                    {initialData.tracking_link && (
+                      <Box>
+                        <Typography variant="caption" color="textSecondary" display="block">Tracking:</Typography>
+                        <a href={initialData.tracking_link} target="_blank" rel="noopener noreferrer" style={{ color: "#3b82f6", fontSize: "0.875rem" }}>
+                          Track Shipment
+                        </a>
+                      </Box>
+                    )}
+                  </Paper>
+                </Box>
+              )}
             </Box>
           </Box>
         )}

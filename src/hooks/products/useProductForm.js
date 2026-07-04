@@ -28,6 +28,10 @@ const DEFAULT_FORM_DATA = {
   is_featured: false,
   is_best_seller: false,
   is_published: true,
+  weight: "",
+  length: "",
+  width: "",
+  height: "",
 };
 
 const EMPTY_SPEC_ROW = { key: "", value: "" };
@@ -114,6 +118,10 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
         is_best_seller: initialData.is_best_seller || false,
         is_published: initialData.is_published !== undefined ? initialData.is_published : true,
         supplier_cost: initialData.supplier_cost || "",
+        weight: initialData.weight || "",
+        length: initialData.length || "",
+        width: initialData.width || "",
+        height: initialData.height || "",
       });
 
       const existingSpec = initialData.specification;
@@ -296,6 +304,16 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
       return;
     }
 
+    if (!formData.weight || !formData.length || !formData.width || !formData.height) {
+      toast.error("Weight, Length, Width, and Height are required");
+      return;
+    }
+    
+    if (Number(formData.weight) <= 0 || Number(formData.length) <= 0 || Number(formData.width) <= 0 || Number(formData.height) <= 0) {
+      toast.error("Weight, Length, Width, and Height must be greater than zero");
+      return;
+    }
+
     setLoading(true);
     const data = new FormData();
     data.append("name", formData.name);
@@ -313,6 +331,10 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     data.append("is_best_seller", formData.is_best_seller);
     data.append("is_published", formData.is_published);
     if (formData.supplier_cost) data.append("supplier_cost", Number(formData.supplier_cost));
+    data.append("weight", Number(formData.weight));
+    data.append("length", Number(formData.length));
+    data.append("width", Number(formData.width));
+    data.append("height", Number(formData.height));
     data.append("frame_ids", JSON.stringify(selectedFrameIds));
     data.append("material_ids", JSON.stringify(selectedMaterialIds));
 
