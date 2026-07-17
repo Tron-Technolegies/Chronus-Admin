@@ -64,6 +64,8 @@ export default function SupplierTable({ onEdit }) {
               <TableCell>Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Phone</TableCell>
+              <TableCell>WeChat ID</TableCell>
+              <TableCell>Country</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -75,6 +77,8 @@ export default function SupplierTable({ onEdit }) {
                 <TableCell>{row.name}</TableCell>
                 <TableCell>{row.email}</TableCell>
                 <TableCell>{row.phone}</TableCell>
+                <TableCell>{row.wechat_id || "-"}</TableCell>
+                <TableCell>{row.country || "-"}</TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
                     <Tooltip title="Edit Supplier">

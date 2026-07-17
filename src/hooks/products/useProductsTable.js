@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { deleteProductNew, getProductsView } from "../../api/api";
 import { getApiErrorMessage } from "../../utils/apiError";
@@ -12,15 +13,14 @@ const DEFAULT_PAGINATION = {
   has_previous: false,
 };
 
-export default function useProductsTable({ filters = {}, refreshKey }) {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function useProductsTable({ filters = {} }) {
+  const queryClient = useQueryClient();
   const [deleteId, setDeleteId] = useState(null);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
 
+  // Reset page when filters or search change
   useEffect(() => {
     setPage(1);
   }, [
@@ -65,40 +65,48 @@ export default function useProductsTable({ filters = {}, refreshKey }) {
     filters.low_stock,
   ]);
 
-  const fetchProducts = useCallback(async () => {
-    setLoading(true);
-    try {
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['products', queryParams],
+    queryFn: async () => {
       const res = await getProductsView(queryParams);
-      const responseData = res.data || {};
-      const products = Array.isArray(responseData.products) ? responseData.products : [];
-      const currentPage = Number(responseData.page) || page;
-      const totalPages = Math.max(Number(responseData.total_pages) || 1, 1);
-      const totalProducts = Number(responseData.total_products) || 0;
-      const limit = Number(responseData.limit) || 12;
+      return res.data || {};
+    },
+    placeholderData: keepPreviousData,
+  });
 
-      setRows(products);
-      setPagination({
-        current_page: currentPage,
-        total_pages: totalPages,
-        total_products: totalProducts,
-        limit,
-        has_next: currentPage < totalPages,
-        has_previous: currentPage > 1,
-      });
+  if (isError) {
+    toast.error(getApiErrorMessage(error, "Failed to fetch products"));
+  }
 
-      if (currentPage > totalPages) {
+  const rows = useMemo(() => Array.isArray(data?.products) ? data.products : [], [data]);
+  
+  const pagination = useMemo(() => {
+    if (!data) return DEFAULT_PAGINATION;
+    const currentPage = Number(data.page) || page;
+    const totalPages = Math.max(Number(data.total_pages) || 1, 1);
+    const totalProducts = Number(data.total_products) || 0;
+    const limit = Number(data.limit) || 12;
+
+    return {
+      current_page: currentPage,
+      total_pages: totalPages,
+      total_products: totalProducts,
+      limit,
+      has_next: currentPage < totalPages,
+      has_previous: currentPage > 1,
+    };
+  }, [data, page]);
+
+  // Handle case where current page exceeds total pages
+  useEffect(() => {
+    if (data && data.total_pages) {
+      const totalPages = Math.max(Number(data.total_pages) || 1, 1);
+      const currentPage = Number(data.page) || page;
+      if (currentPage > totalPages && totalPages > 0) {
         setPage(totalPages);
       }
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to fetch products"));
-    } finally {
-      setLoading(false);
     }
-  }, [queryParams, page]);
-
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts, refreshKey]);
+  }, [data, page]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -107,11 +115,13 @@ export default function useProductsTable({ filters = {}, refreshKey }) {
       await deleteProductNew(deleteId);
       toast.success("Product deleted successfully");
       setDeleteId(null);
+      
+      // Invalidate products query to trigger a background refetch
+      queryClient.invalidateQueries({ queryKey: ['products'] });
 
+      // If it was the last item on the page, go to previous page
       if (rows.length === 1 && page > 1) {
         setPage((prev) => prev - 1);
-      } else {
-        fetchProducts();
       }
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Delete failed"));
@@ -131,7 +141,7 @@ export default function useProductsTable({ filters = {}, refreshKey }) {
 
   return {
     rows,
-    loading,
+    loading: isLoading,
     deleteId,
     setDeleteId,
     handleDelete,

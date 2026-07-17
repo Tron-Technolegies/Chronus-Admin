@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getOrders } from "../../api/api";
 
 const statusStyles = {
@@ -10,20 +11,14 @@ const statusStyles = {
 };
 
 const RecentOrders = () => {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getOrders()
-      .then((res) => {
-        // Take 5 most recent orders (API returns latest first, or we sort by id desc)
-        const all = res.data?.orders || res.data || [];
-        const sorted = [...all].sort((a, b) => b.id - a.id).slice(0, 5);
-        setOrders(sorted);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: orders = [], isLoading: loading } = useQuery({
+    queryKey: ['recentOrders'],
+    queryFn: async () => {
+      const res = await getOrders();
+      const all = res.data?.orders || res.data || [];
+      return [...all].sort((a, b) => b.id - a.id).slice(0, 5);
+    }
+  });
 
   return (
     <div className="col-span-12 rounded-lg border border-gray-200 bg-white shadow-sm">

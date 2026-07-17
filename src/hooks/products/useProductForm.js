@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   addProduct,
@@ -37,6 +38,7 @@ const DEFAULT_FORM_DATA = {
 const EMPTY_SPEC_ROW = { key: "", value: "" };
 const EMPTY_SIZE_ROW = { size: "", price: "" };
 const EMPTY_COLOR_ROW = { color_name: "", image: null, preview: "" };
+const EMPTY_VARIANT = { id: "", sku: "", stock: "", options: [{ option_name: "", option_value: "" }], images: [], existing_images: [], images_preview: [] };
 
 const normalizeRelationIds = (value) => {
   if (!Array.isArray(value)) return [];
@@ -66,39 +68,30 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [galleryPreview, setGalleryPreview] = useState([]);
+  const [variants, setVariants] = useState([EMPTY_VARIANT]);
+
+  const queryClient = useQueryClient();
+
+  const { data: catRes, isLoading: isCatLoading } = useQuery({ queryKey: ['categories'], queryFn: getCategories, enabled: open });
+  const { data: brandRes, isLoading: isBrandLoading } = useQuery({ queryKey: ['brands'], queryFn: getBrands, enabled: open });
+  const { data: subCatRes, isLoading: isSubCatLoading } = useQuery({ queryKey: ['subcategories'], queryFn: getSubCategories, enabled: open });
+  const { data: frameRes, isLoading: isFrameLoading } = useQuery({ queryKey: ['frames'], queryFn: getFrames, enabled: open });
+  const { data: materialRes, isLoading: isMaterialLoading } = useQuery({ queryKey: ['materials'], queryFn: getMaterials, enabled: open });
+  const { data: supplierRes, isLoading: isSupplierLoading } = useQuery({ queryKey: ['suppliers'], queryFn: getSuppliers, enabled: open });
 
   useEffect(() => {
-    const fetchLookups = async () => {
-      try {
-        const [catRes, brandRes, subCatRes, frameRes, materialRes, supplierRes] = await Promise.all([
-          getCategories(),
-          getBrands(),
-          getSubCategories(),
-          getFrames(),
-          getMaterials(),
-          getSuppliers(),
-        ]);
-
-        setCategories(catRes.data.categories || []);
-        setBrands(brandRes.data.brands || []);
-        setSuppliers(supplierRes.data || []);
-
-        const subList =
-          subCatRes.data.subcategories ||
-          subCatRes.data.sub_categories ||
-          (Array.isArray(subCatRes.data) ? subCatRes.data : []);
-        setSubCategories(subList);
-        setFrames(Array.isArray(frameRes.data) ? frameRes.data : frameRes.data.frames || []);
-        setMaterials(
-          Array.isArray(materialRes.data) ? materialRes.data : materialRes.data.materials || [],
-        );
-      } catch (error) {
-        toast.error(getApiErrorMessage(error, "Failed to load product form data"));
-      }
-    };
-
-    if (open) fetchLookups();
-  }, [open]);
+    if (catRes) setCategories(catRes.data.categories || []);
+    if (brandRes) setBrands(brandRes.data.brands || []);
+    if (supplierRes) setSuppliers(supplierRes.data || []);
+    
+    if (subCatRes) {
+      const subList = subCatRes.data.subcategories || subCatRes.data.sub_categories || (Array.isArray(subCatRes.data) ? subCatRes.data : []);
+      setSubCategories(subList);
+    }
+    
+    if (frameRes) setFrames(Array.isArray(frameRes.data) ? frameRes.data : frameRes.data.frames || []);
+    if (materialRes) setMaterials(Array.isArray(materialRes.data) ? materialRes.data : materialRes.data.materials || []);
+  }, [catRes, brandRes, subCatRes, frameRes, materialRes, supplierRes]);
 
   useEffect(() => {
     if (initialData) {
@@ -163,6 +156,20 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
       setSelectedMaterialIds(normalizeRelationIds(initialData.materials));
       setPreview(initialData.image || null);
       setGalleryPreview(initialData.gallery || []);
+
+      if (initialData.product_type === "variant" || (Array.isArray(initialData.variants) && initialData.variants.length > 0)) {
+        setVariants(initialData.variants.map(v => ({
+           id: v.id || "",
+           sku: v.sku || "",
+           stock: v.stock !== undefined && v.stock !== null ? String(v.stock) : "",
+           options: Array.isArray(v.options) && v.options.length > 0 ? v.options : [{ option_name: "", option_value: "" }],
+           images: [],
+           existing_images: v.images || [],
+           images_preview: Array.isArray(v.images) ? v.images.map(img => img.url || img) : []
+        })));
+      } else {
+        setVariants([EMPTY_VARIANT]);
+      }
     } else {
       setFormData(DEFAULT_FORM_DATA);
       setSpecs([EMPTY_SPEC_ROW]);
@@ -172,6 +179,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
       setSelectedMaterialIds([]);
       setPreview(null);
       setGalleryPreview([]);
+      setVariants([EMPTY_VARIANT]);
     }
   }, [initialData, open]);
 
@@ -271,6 +279,88 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     );
   };
 
+  const addVariant = () => {
+    setVariants((prev) => [...prev, { id: "", sku: "", stock: "", options: [{ option_name: "", option_value: "" }], images: [], existing_images: [], images_preview: [] }]);
+  };
+
+  const updateVariant = (index, field, value) => {
+    setVariants((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+  };
+
+  const removeVariant = (index) => {
+    setVariants((prev) => prev.length === 1 ? [EMPTY_VARIANT] : prev.filter((_, i) => i !== index));
+  };
+
+  const addVariantOption = (variantIndex) => {
+    setVariants((prev) => prev.map((row, i) => {
+      if (i === variantIndex) {
+        return { ...row, options: [...row.options, { option_name: "", option_value: "" }] };
+      }
+      return row;
+    }));
+  };
+
+  const updateVariantOption = (variantIndex, optionIndex, field, value) => {
+    setVariants((prev) => prev.map((row, i) => {
+      if (i === variantIndex) {
+        const newOptions = row.options.map((opt, j) => (j === optionIndex ? { ...opt, [field]: value } : opt));
+        return { ...row, options: newOptions };
+      }
+      return row;
+    }));
+  };
+
+  const removeVariantOption = (variantIndex, optionIndex) => {
+    setVariants((prev) => prev.map((row, i) => {
+      if (i === variantIndex) {
+        const newOptions = row.options.length === 1 ? [{ option_name: "", option_value: "" }] : row.options.filter((_, j) => j !== optionIndex);
+        return { ...row, options: newOptions };
+      }
+      return row;
+    }));
+  };
+
+  const handleVariantImagesChange = (variantIndex, e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setVariants((prev) => prev.map((row, i) => {
+      if (i === variantIndex) {
+        return {
+          ...row,
+          images: [...row.images, ...files],
+          images_preview: [...row.images_preview, ...files.map(file => URL.createObjectURL(file))]
+        };
+      }
+      return row;
+    }));
+    e.target.value = "";
+  };
+
+  const handleRemoveVariantImage = (variantIndex, imageIndex, isExisting) => {
+    setVariants((prev) => prev.map((row, i) => {
+      if (i === variantIndex) {
+        if (isExisting) {
+           return {
+             ...row,
+             existing_images: row.existing_images.filter((_, j) => j !== imageIndex),
+             images_preview: row.images_preview.filter((img) => img !== row.existing_images[imageIndex]?.url && img !== row.existing_images[imageIndex])
+           };
+        } else {
+           // It's a new uploaded image
+           // imageIndex for new uploaded image is relative to existing_images.length
+           const newImageIdx = imageIndex - row.existing_images.length;
+           return {
+             ...row,
+             images: row.images.filter((_, j) => j !== newImageIdx),
+             images_preview: row.images_preview.filter((_, j) => j !== imageIndex)
+           };
+        }
+      }
+      return row;
+    }));
+  };
+
   const specificationPayload = useMemo(() => {
     const specObj = {};
     specs.forEach(({ key, value }) => {
@@ -324,9 +414,48 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     data.append("price", Number(formData.price));
     data.append("description", formData.description);
     data.append("specification", JSON.stringify(specificationPayload));
-    data.append("sizes", JSON.stringify(sizesPayload));
-    data.append("colors", JSON.stringify(colorsPayload.map(({ color_name }) => ({ color_name }))));
-    if (formData.stock !== "") data.append("stock", Number(formData.stock));
+    
+    // Determine category characteristics
+    const selectedCategoryObj = categories.find((c) => String(c.id) === String(formData.category));
+    const catName = selectedCategoryObj?.name?.toLowerCase() || "";
+    const isArt = catName.includes("art");
+
+    if (isArt) {
+      data.append("sizes", JSON.stringify(sizesPayload));
+      data.append("colors", JSON.stringify(colorsPayload.map(({ color_name }) => ({ color_name }))));
+      if (formData.stock !== "") data.append("stock", Number(formData.stock));
+      data.append("frame_ids", JSON.stringify(selectedFrameIds));
+      data.append("material_ids", JSON.stringify(selectedMaterialIds));
+      colors.forEach((color, index) => {
+        if (color.image) {
+          data.append(`color_image_${index}`, color.image);
+        }
+      });
+    } else {
+      data.append("product_type", "variant");
+      const validVariants = variants.filter(v => v.sku.trim() !== "");
+      
+      const payloadVariants = validVariants.map((v) => {
+        const payloadV = {
+          sku: v.sku,
+          stock: Number(v.stock) || 0,
+          options: v.options.filter(opt => opt.option_name.trim() !== "" && opt.option_value.trim() !== "")
+        };
+        if (v.id) {
+          payloadV.id = v.id;
+          payloadV.existing_images = v.existing_images;
+        }
+        return payloadV;
+      });
+      data.append("variants", JSON.stringify(payloadVariants));
+      
+      validVariants.forEach((v, index) => {
+        v.images.forEach((file) => {
+          data.append(`variant_images_${index}`, file);
+        });
+      });
+    }
+
     data.append("is_featured", formData.is_featured);
     data.append("is_best_seller", formData.is_best_seller);
     data.append("is_published", formData.is_published);
@@ -335,16 +464,9 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     data.append("length", Number(formData.length));
     data.append("width", Number(formData.width));
     data.append("height", Number(formData.height));
-    data.append("frame_ids", JSON.stringify(selectedFrameIds));
-    data.append("material_ids", JSON.stringify(selectedMaterialIds));
 
     if (formData.image) data.append("image", formData.image);
     formData.gallery.forEach((file) => data.append("images", file));
-    colors.forEach((color, index) => {
-      if (color.image) {
-        data.append(`color_image_${index}`, color.image);
-      }
-    });
 
     try {
       if (initialData) {
@@ -354,6 +476,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
         await addProduct(data);
         toast.success("Product added successfully");
       }
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       onSuccess();
       onClose();
     } catch (error) {
@@ -379,6 +502,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     suppliers,
     loading,
     galleryPreview,
+    variants,
     handleChange,
     handleToggleFlag,
     handleImageChange,
@@ -398,6 +522,14 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     clearColorImage,
     setSelectedFrameIds,
     setSelectedMaterialIds,
+    addVariant,
+    updateVariant,
+    removeVariant,
+    addVariantOption,
+    updateVariantOption,
+    removeVariantOption,
+    handleVariantImagesChange,
+    handleRemoveVariantImage,
     handleSubmit,
   };
 }

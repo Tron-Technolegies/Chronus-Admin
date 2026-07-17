@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import { getDashboardStats } from "../../api/api";
 
 const COLORS = ["#3D1613", "#e4b76f", "#888888", "#c0a060", "#555555", "#d4a855", "#aaaaaa"];
 
 const RevenuePieChart = () => {
-  const [data, setData] = useState([]);
+  const { data: statsData } = useQuery({
+    queryKey: ['dashboard_stats'],
+    queryFn: async () => {
+      const res = await getDashboardStats();
+      return res.data;
+    }
+  });
 
-  useEffect(() => {
-    getDashboardStats()
-      .then((res) => {
-        const mapped = (res.data.category_revenue || []).map((item) => ({
-          name: item.category,
-          value: parseFloat(item.revenue),
-        }));
-        setData(mapped);
-      })
-      .catch(console.error);
-  }, []);
+  const data = (statsData?.category_revenue || []).map((item) => ({
+    name: item.category,
+    value: parseFloat(item.revenue),
+  }));
 
   return (
     <div className="col-span-12 rounded-lg border border-gray-200 bg-white p-6 shadow-sm xl:col-span-4">

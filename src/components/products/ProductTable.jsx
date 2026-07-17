@@ -130,6 +130,11 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
                   <TableCell>
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                       <span className="font-medium text-gray-900">{row.name}</span>
+                      {Array.isArray(row.variants) && row.variants.length > 0 && (
+                        <Typography variant="caption" color="text.secondary">
+                          {row.variants.length} Variant(s)
+                        </Typography>
+                      )}
                       <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
                         {row.is_published === false && (
                           <Chip label="Hidden" size="small" sx={{ height: 20, fontSize: "0.65rem", bgcolor: "#f3f4f6", color: "#4b5563", fontWeight: 600 }} />
@@ -155,12 +160,28 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
                   </TableCell>
 
                   <TableCell align="right">
-                    <Chip
-                      label={row.stock > 0 ? (row.stock < 10 ? `Low Stock (${row.stock})` : `${row.stock} in stock`) : "Out of Stock"}
-                      color={row.stock === 0 ? "error" : (row.stock < 10 ? "warning" : "success")}
-                      size="small"
-                      variant={row.stock > 0 ? "filled" : "outlined"}
-                    />
+                    {(() => {
+                      const isVariantProduct = Array.isArray(row.variants) && row.variants.length > 0;
+                      const calculatedStock = isVariantProduct 
+                        ? row.variants.reduce((acc, v) => acc + (Number(v.stock) || 0), 0)
+                        : Number(row.stock || 0);
+                        
+                      return (
+                        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                          <Chip
+                            label={calculatedStock > 0 ? (calculatedStock < 10 ? `Low Stock (${calculatedStock})` : `${calculatedStock} in stock`) : "Out of Stock"}
+                            color={calculatedStock === 0 ? "error" : (calculatedStock < 10 ? "warning" : "success")}
+                            size="small"
+                            variant={calculatedStock > 0 ? "filled" : "outlined"}
+                          />
+                          {isVariantProduct && (
+                            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                              across variants
+                            </Typography>
+                          )}
+                        </Box>
+                      );
+                    })()}
                   </TableCell>
 
                   <TableCell align="right">

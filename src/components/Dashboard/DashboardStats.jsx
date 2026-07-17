@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { BsCurrencyDollar, BsCart, BsClockHistory, BsBag } from "react-icons/bs";
 import { FaArrowTrendUp } from "react-icons/fa6";
 import { getDashboardStats } from "../../api/api";
 
 const DashboardStats = () => {
-  const [data, setData] = useState(null);
+  const { data: statsData } = useQuery({
+    queryKey: ['dashboard_stats'],
+    queryFn: async () => {
+      const res = await getDashboardStats();
+      return res.data;
+    }
+  });
 
-  useEffect(() => {
-    getDashboardStats()
-      .then((res) => setData(res.data.cards))
-      .catch(console.error);
-  }, []);
+  const data = statsData?.cards;
 
   const fmt = (val) =>
     typeof val === "number"

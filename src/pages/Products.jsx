@@ -3,10 +3,11 @@ import ProductTable from "../components/products/ProductTable";
 import { Button } from "@mui/material";
 import { IoAdd, IoFunnelOutline } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
-import ProductModal from "../components/products/ProductModal";
 import useProductsPage from "../hooks/products/useProductsPage";
+import { useNavigate } from "react-router-dom";
 
 export default function Products() {
+  const navigate = useNavigate();
   const {
     open,
     editData,
@@ -54,7 +55,7 @@ export default function Products() {
           <Button
             variant="contained"
             startIcon={<IoAdd />}
-            onClick={openCreateModal}
+            onClick={() => navigate('/products/add')}
             sx={{
               bgcolor: "#3D1613",
               textTransform: "none",
@@ -186,21 +187,12 @@ export default function Products() {
       )}
 
       <div className="mt-4">
-        <ProductTable onEdit={openEditModal} filters={filters} refreshKey={refreshKey} />
-      </div>
-
-      {/* Add Modal */}
-      <ProductModal open={open} onClose={closeCreateModal} onSuccess={handleSuccess} />
-
-      {/* Edit Modal */}
-      {editData && (
-        <ProductModal
-          open={Boolean(editData)}
-          onClose={closeEditModal}
-          onSuccess={handleEditSuccess}
-          initialData={editData}
+        <ProductTable 
+          onEdit={(row) => navigate(`/products/edit/${row.id}`, { state: { editData: row } })} 
+          filters={filters} 
+          refreshKey={refreshKey} 
         />
-      )}
+      </div>
     </div>
   );
 }

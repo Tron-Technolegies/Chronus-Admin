@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   AreaChart,
   Area,
@@ -11,20 +12,18 @@ import {
 import { getDashboardStats } from "../../api/api";
 
 const SalesChart = () => {
-  const [data, setData] = useState([]);
+  const { data: statsData } = useQuery({
+    queryKey: ['dashboard_stats'],
+    queryFn: async () => {
+      const res = await getDashboardStats();
+      return res.data;
+    }
+  });
 
-  useEffect(() => {
-    getDashboardStats()
-      .then((res) => {
-        // Convert {month, revenue} → {name, revenue}
-        const mapped = (res.data.monthly_sales || []).map((item) => ({
-          name: item.month,
-          revenue: parseFloat(item.revenue),
-        }));
-        setData(mapped);
-      })
-      .catch(console.error);
-  }, []);
+  const data = (statsData?.monthly_sales || []).map((item) => ({
+    name: item.month,
+    revenue: parseFloat(item.revenue),
+  }));
 
   return (
     <div className="col-span-12 rounded-lg border border-gray-200 bg-white p-6 shadow-sm xl:col-span-8">

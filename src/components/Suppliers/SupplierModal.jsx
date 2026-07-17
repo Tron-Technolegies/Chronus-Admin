@@ -18,6 +18,10 @@ export default function SupplierModal({ open, onClose, onSuccess, initialData })
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [wechat_id, setWechatId] = useState("");
+  const [country, setCountry] = useState("");
+  const [address, setAddress] = useState("");
+  const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -25,10 +29,18 @@ export default function SupplierModal({ open, onClose, onSuccess, initialData })
       setName(initialData.name || "");
       setEmail(initialData.email || "");
       setPhone(initialData.phone || "");
+      setWechatId(initialData.wechat_id || "");
+      setCountry(initialData.country || "");
+      setAddress(initialData.address || "");
+      setNotes(initialData.notes || "");
     } else {
       setName("");
       setEmail("");
       setPhone("");
+      setWechatId("");
+      setCountry("");
+      setAddress("");
+      setNotes("");
     }
   }, [initialData, open]);
 
@@ -37,11 +49,13 @@ export default function SupplierModal({ open, onClose, onSuccess, initialData })
 
     setLoading(true);
     try {
+      const payload = { name, email, phone, wechat_id, country, address, notes };
+      
       if (initialData) {
-        await updateSupplier(initialData.id, { name, email, phone });
+        await updateSupplier(initialData.id, payload);
         toast.success("Supplier updated successfully");
       } else {
-        await addSupplier({ name, email, phone });
+        await addSupplier(payload);
         toast.success("Supplier added successfully");
       }
       onSuccess();
@@ -121,9 +135,74 @@ export default function SupplierModal({ open, onClose, onSuccess, initialData })
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           sx={{
+            mb: 2,
             '& .MuiOutlinedInput-root': {
                 borderRadius: 2,
             }
+          }}
+        />
+
+        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 2 }}>
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#333' }}>
+                WeChat ID
+            </Typography>
+            <TextField
+              placeholder="e.g. johndoe123"
+              type="text"
+              fullWidth
+              variant="outlined"
+              value={wechat_id}
+              onChange={(e) => setWechatId(e.target.value)}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            />
+          </Box>
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#333' }}>
+                Country
+            </Typography>
+            <TextField
+              placeholder="e.g. USA"
+              type="text"
+              fullWidth
+              variant="outlined"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            />
+          </Box>
+        </Box>
+
+        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#333' }}>
+            Address
+        </Typography>
+        <TextField
+          placeholder="Enter full address..."
+          type="text"
+          fullWidth
+          variant="outlined"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          sx={{
+            mb: 2,
+            '& .MuiOutlinedInput-root': { borderRadius: 2 }
+          }}
+        />
+
+        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#333' }}>
+            Notes
+        </Typography>
+        <TextField
+          placeholder="Any additional notes..."
+          type="text"
+          multiline
+          rows={3}
+          fullWidth
+          variant="outlined"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          sx={{
+            '& .MuiOutlinedInput-root': { borderRadius: 2 }
           }}
         />
       </DialogContent>

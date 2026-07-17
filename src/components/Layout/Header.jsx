@@ -1,25 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
 import { BsBell, BsList } from "react-icons/bs";
 import { useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { getNotifications } from "../../api/api";
 
 const Header = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
-  const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const res = await getNotifications();
-        setNotifications(Array.isArray(res.data) ? res.data : (res.data.notifications || []));
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
-      }
-    };
-    fetchNotifications();
-  }, []);
+  const { data: notificationsData } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const res = await getNotifications();
+      return Array.isArray(res.data) ? res.data : (res.data.notifications || []);
+    }
+  });
+
+  const notifications = notificationsData || [];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
