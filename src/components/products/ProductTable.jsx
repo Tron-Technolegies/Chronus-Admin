@@ -18,13 +18,15 @@ import {
   Typography,
   Button,
 } from "@mui/material";
-import { FiEdit, FiTrash2, FiSearch } from "react-icons/fi";
+import { FiEdit, FiTrash2, FiSearch, FiEye } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
 import useProductsTable from "../../hooks/products/useProductsTable";
 
 export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
+  const navigate = useNavigate();
   const {
     rows,
     loading,
@@ -186,6 +188,20 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
 
                   <TableCell align="right">
                     <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                      <Tooltip title="View Product">
+                        <IconButton
+                          size="small"
+                          onClick={() => navigate(`/products/view/${row.id}`)}
+                          sx={{
+                            color: "#10b981",
+                            bgcolor: "#ecfdf5",
+                            "&:hover": { bgcolor: "#d1fae5" },
+                          }}
+                        >
+                          <FiEye size={18} />
+                        </IconButton>
+                      </Tooltip>
+
                       <Tooltip title="Edit Product">
                         <IconButton
                           size="small"

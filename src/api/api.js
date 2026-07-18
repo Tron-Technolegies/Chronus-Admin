@@ -10,6 +10,7 @@ export const BASE_URL = "http://65.0.131.33/api/";
 
 // GET products
 export const getProducts = () => API.get("/products/");
+export const getProductDetail = (id) => API.get(`/products/${id}/`);
 
 // DELETE product
 export const deleteProduct = (id) => API.delete(`/products/${id}/`);

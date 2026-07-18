@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import Orders from "./pages/Orders";
 import Products from "./pages/Products";
 import ProductFormPage from "./pages/ProductFormPage";
+import ProductDetail from "./pages/ProductDetail";
 import Categories from "./pages/Categories";
 import Brands from "./pages/Brands";
 import Customers from "./pages/Customers";
@@ -39,6 +40,7 @@ function App() {
             <Route path="products" element={<Products />} />
             <Route path="products/add" element={<ProductFormPage />} />
             <Route path="products/edit/:id" element={<ProductFormPage />} />
+            <Route path="products/view/:id" element={<ProductDetail />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/brands" element={<Brands />} />
             <Route path="/frames" element={<Frames />} />
