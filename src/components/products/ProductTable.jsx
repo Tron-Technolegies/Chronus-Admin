@@ -120,7 +120,7 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
           <TableBody>
             {rows.length > 0 ? (
               rows.map((row) => (
-                <TableRow key={row.id} hover>
+                <TableRow key={row.id} hover onClick={() => navigate(`/products/view/${row.id}`)} sx={{ cursor: "pointer" }}>
                   <TableCell>
                     {row.image ? (
                       <Avatar src={row.image} variant="rounded" sx={{ width: 40, height: 40 }} />
@@ -188,24 +188,10 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
 
                   <TableCell align="right">
                     <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-                      <Tooltip title="View Product">
-                        <IconButton
-                          size="small"
-                          onClick={() => navigate(`/products/view/${row.id}`)}
-                          sx={{
-                            color: "#10b981",
-                            bgcolor: "#ecfdf5",
-                            "&:hover": { bgcolor: "#d1fae5" },
-                          }}
-                        >
-                          <FiEye size={18} />
-                        </IconButton>
-                      </Tooltip>
-
                       <Tooltip title="Edit Product">
                         <IconButton
                           size="small"
-                          onClick={() => onEdit && onEdit(row)}
+                          onClick={(e) => { e.stopPropagation(); onEdit && onEdit(row); }}
                           sx={{
                             color: "#0E45B7",
                             bgcolor: "#eff6ff",
@@ -219,7 +205,7 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
                       <Tooltip title="Delete Product">
                         <IconButton
                           size="small"
-                          onClick={() => setDeleteId(row.id)}
+                          onClick={(e) => { e.stopPropagation(); setDeleteId(row.id); }}
                           sx={{
                             color: "#ef4444",
                             bgcolor: "#fef2f2",

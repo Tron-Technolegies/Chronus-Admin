@@ -89,7 +89,7 @@ export default function ProductFormPage() {
   const isArt = catName.includes("art");
 
   const showColors = isArt;
-  const showSizes = isArt;
+  const showSizes = formData.category !== ""; // Enable sizes for all selected categories
   const showFrames = isArt;
   const showMaterials = isArt;
   const showVariants = !isArt && formData.category !== ""; // Only show after category is selected

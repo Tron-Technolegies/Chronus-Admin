@@ -165,7 +165,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
            options: Array.isArray(v.options) && v.options.length > 0 ? v.options : [{ option_name: "", option_value: "" }],
            images: [],
            existing_images: v.images || [],
-           images_preview: Array.isArray(v.images) ? v.images.map(img => img.url || img) : []
+           images_preview: Array.isArray(v.images) ? v.images.map(img => img.image || img.url || img) : []
         })));
       } else {
         setVariants([EMPTY_VARIANT]);
@@ -344,7 +344,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
            return {
              ...row,
              existing_images: row.existing_images.filter((_, j) => j !== imageIndex),
-             images_preview: row.images_preview.filter((img) => img !== row.existing_images[imageIndex]?.url && img !== row.existing_images[imageIndex])
+             images_preview: row.images_preview.filter((_, j) => j !== imageIndex)
            };
         } else {
            // It's a new uploaded image

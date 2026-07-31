@@ -49,8 +49,7 @@ export default function Customers() {
             <MenuItem onClick={() => applyFilter("is_active", "true")}>Active Users</MenuItem>
             <MenuItem onClick={() => applyFilter("is_active", "false")}>Inactive Users</MenuItem>
             <MenuItem onClick={() => applyFilter("is_staff", "true")}>Admin Users</MenuItem>
-            <MenuItem onClick={() => applyFilter("is_staff", "false")}>Normal Customers</MenuItem>
-            <MenuItem onClick={clearFilters}>Clear Filters</MenuItem>
+            <MenuItem onClick={clearFilters} sx={{ color: "#ef4444" }}>Clear Filters</MenuItem>
           </Menu>
         </div>
       </div>

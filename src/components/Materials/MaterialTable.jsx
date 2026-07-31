@@ -10,6 +10,9 @@ import {
   IconButton,
   Tooltip,
   Box,
+  Pagination,
+  Stack,
+  Typography,
 } from "@mui/material";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import toast from "react-hot-toast";
@@ -22,6 +25,8 @@ export default function MaterialTable({ onEdit }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 10;
 
   const fetchMaterials = async () => {
     try {
@@ -53,6 +58,9 @@ export default function MaterialTable({ onEdit }) {
 
   if (loading) return <Loader />;
 
+  const totalPages = Math.ceil(rows.length / rowsPerPage);
+  const paginatedRows = rows.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+
   return (
     <>
       <TableContainer component={Paper}>
@@ -68,7 +76,7 @@ export default function MaterialTable({ onEdit }) {
           </TableHead>
 
           <TableBody>
-            {rows.map((row) => (
+            {paginatedRows.map((row) => (
               <TableRow key={row.id}>
                 <TableCell>{row.id}</TableCell>
                 <TableCell>{row.name}</TableCell>
@@ -102,6 +110,20 @@ export default function MaterialTable({ onEdit }) {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {totalPages > 1 && (
+        <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems="center" spacing={2} sx={{ mt: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Showing {((page - 1) * rowsPerPage) + 1} to {Math.min(page * rowsPerPage, rows.length)} of {rows.length} entries
+          </Typography>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, val) => setPage(val)}
+            color="primary"
+          />
+        </Stack>
+      )}
 
       <ConfirmModal
         open={Boolean(deleteId)}

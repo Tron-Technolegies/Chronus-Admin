@@ -14,6 +14,8 @@ import {
   TextField,
   InputAdornment,
   Tooltip,
+  Pagination,
+  Stack,
 } from "@mui/material";
 import { FiSearch, FiTrash2 } from "react-icons/fi";
 
@@ -28,6 +30,12 @@ export default function CustomerTable({ filters = {} }) {
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 10;
+
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
 
   const fetchCustomers = async (searchValue = "") => {
     try {
@@ -70,6 +78,9 @@ export default function CustomerTable({ filters = {} }) {
 
   if (loading) return <Loader />;
 
+  const totalPages = Math.ceil(rows.length / rowsPerPage);
+  const paginatedRows = rows.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+
   return (
     <>
       {/* Search Bar */}
@@ -103,13 +114,12 @@ export default function CustomerTable({ filters = {} }) {
               <TableCell sx={{ fontWeight: 600 }}>User</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Date Joined</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {rows.length > 0 ? (
-              rows.map((row) => (
+            {paginatedRows.length > 0 ? (
+              paginatedRows.map((row) => (
                 <TableRow key={row.id} hover>
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -128,17 +138,7 @@ export default function CustomerTable({ filters = {} }) {
                   </TableCell>
                   <TableCell>{row.email}</TableCell>
                   <TableCell>{new Date(row.date_joined).toLocaleDateString()}</TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Delete Customer">
-                      <IconButton
-                        size="small"
-                        onClick={() => setDeleteId(row.id)}
-                        sx={{ color: "#ef4444", bgcolor: "#fef2f2", "&:hover": { bgcolor: "#fee2e2" } }}
-                      >
-                        <FiTrash2 size={18} />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
+                 
                 </TableRow>
               ))
             ) : (
@@ -151,6 +151,20 @@ export default function CustomerTable({ filters = {} }) {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {totalPages > 1 && (
+        <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems="center" spacing={2} sx={{ mt: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Showing {((page - 1) * rowsPerPage) + 1} to {Math.min(page * rowsPerPage, rows.length)} of {rows.length} entries
+          </Typography>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, val) => setPage(val)}
+            color="primary"
+          />
+        </Stack>
+      )}
 
       <ConfirmModal
         open={Boolean(deleteId)}
