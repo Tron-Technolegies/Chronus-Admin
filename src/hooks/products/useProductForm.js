@@ -1,3 +1,541 @@
+// import { useEffect, useMemo, useState } from "react";
+// import { useQuery, useQueryClient } from "@tanstack/react-query";
+// import toast from "react-hot-toast";
+// import {
+//   addProduct,
+//   updateProductNew,
+//   getCategories,
+//   getBrands,
+//   getSubCategories,
+//   getFrames,
+//   getMaterials,
+//   getSuppliers,
+// } from "../../api/api";
+// import { getApiErrorMessage } from "../../utils/apiError";
+
+// const DEFAULT_FORM_DATA = {
+//   name: "",
+//   category: "",
+//   subcategory: "",
+//   brand: "",
+//   supplier: "",
+//   price: "",
+//   supplier_cost: "",
+//   description: "",
+//   stock: "",
+//   status: "In Stock",
+//   image: null,
+//   gallery: [],
+//   is_featured: false,
+//   is_best_seller: false,
+//   is_published: true,
+//   weight: "",
+//   length: "",
+//   width: "",
+//   height: "",
+// };
+
+// const EMPTY_SPEC_ROW = { key: "", value: "" };
+// const EMPTY_SIZE_ROW = { size: "", price: "" };
+// const EMPTY_COLOR_ROW = { color_name: "", image: null, preview: "" };
+// const EMPTY_VARIANT = { id: "", sku: "", stock: "", options: [{ option_name: "", option_value: "" }], images: [], existing_images: [], images_preview: [] };
+
+// const normalizeRelationIds = (value) => {
+//   if (!Array.isArray(value)) return [];
+
+//   return value
+//     .map((item) => {
+//       if (item && typeof item === "object") return item.id;
+//       return item;
+//     })
+//     .filter((item) => item !== null && item !== undefined && item !== "")
+//     .map((item) => String(item));
+// };
+
+// export default function useProductForm({ open, onClose, onSuccess, initialData }) {
+//   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
+//   const [specs, setSpecs] = useState([EMPTY_SPEC_ROW]);
+//   const [sizes, setSizes] = useState([EMPTY_SIZE_ROW]);
+//   const [colors, setColors] = useState([EMPTY_COLOR_ROW]);
+//   const [selectedFrameIds, setSelectedFrameIds] = useState([]);
+//   const [selectedMaterialIds, setSelectedMaterialIds] = useState([]);
+//   const [preview, setPreview] = useState(null);
+//   const [categories, setCategories] = useState([]);
+//   const [brands, setBrands] = useState([]);
+//   const [subCategories, setSubCategories] = useState([]);
+//   const [frames, setFrames] = useState([]);
+//   const [materials, setMaterials] = useState([]);
+//   const [suppliers, setSuppliers] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [galleryPreview, setGalleryPreview] = useState([]);
+//   const [variants, setVariants] = useState([EMPTY_VARIANT]);
+
+//   const queryClient = useQueryClient();
+
+//   const { data: catRes, isLoading: isCatLoading } = useQuery({ queryKey: ['categories'], queryFn: getCategories, enabled: open });
+//   const { data: brandRes, isLoading: isBrandLoading } = useQuery({ queryKey: ['brands'], queryFn: getBrands, enabled: open });
+//   const { data: subCatRes, isLoading: isSubCatLoading } = useQuery({ queryKey: ['subcategories'], queryFn: getSubCategories, enabled: open });
+//   const { data: frameRes, isLoading: isFrameLoading } = useQuery({ queryKey: ['frames'], queryFn: getFrames, enabled: open });
+//   const { data: materialRes, isLoading: isMaterialLoading } = useQuery({ queryKey: ['materials'], queryFn: getMaterials, enabled: open });
+//   const { data: supplierRes, isLoading: isSupplierLoading } = useQuery({ queryKey: ['suppliers'], queryFn: getSuppliers, enabled: open });
+
+//   useEffect(() => {
+//     if (catRes) setCategories(catRes.data.categories || []);
+//     if (brandRes) setBrands(brandRes.data.brands || []);
+//     if (supplierRes) setSuppliers(supplierRes.data || []);
+    
+//     if (subCatRes) {
+//       const subList = subCatRes.data.subcategories || subCatRes.data.sub_categories || (Array.isArray(subCatRes.data) ? subCatRes.data : []);
+//       setSubCategories(subList);
+//     }
+    
+//     if (frameRes) setFrames(Array.isArray(frameRes.data) ? frameRes.data : frameRes.data.frames || []);
+//     if (materialRes) setMaterials(Array.isArray(materialRes.data) ? materialRes.data : materialRes.data.materials || []);
+//   }, [catRes, brandRes, subCatRes, frameRes, materialRes, supplierRes]);
+
+//   useEffect(() => {
+//     if (initialData) {
+//       setFormData({
+//         name: initialData.name || "",
+//         category: initialData.category?.id || "",
+//         subcategory: initialData.subcategory?.id || "",
+//         brand: initialData.brand?.id || "",
+//         supplier: initialData.supplier?.id || "",
+//         price: initialData.price || "",
+//         description: initialData.description || "",
+//         stock: initialData.stock || "",
+//         status: initialData.stock > 0 ? "In Stock" : "Out of Stock",
+//         image: null,
+//         gallery: [],
+//         is_featured: initialData.is_featured || false,
+//         is_best_seller: initialData.is_best_seller || false,
+//         is_published: initialData.is_published !== undefined ? initialData.is_published : true,
+//         supplier_cost: initialData.supplier_cost || "",
+//         weight: initialData.weight || "",
+//         length: initialData.length || "",
+//         width: initialData.width || "",
+//         height: initialData.height || "",
+//       });
+
+//       const existingSpec = initialData.specification;
+//       if (
+//         existingSpec &&
+//         typeof existingSpec === "object" &&
+//         Object.keys(existingSpec).length > 0
+//       ) {
+//         setSpecs(
+//           Object.entries(existingSpec).map(([key, value]) => ({ key, value: String(value) })),
+//         );
+//       } else {
+//         setSpecs([EMPTY_SPEC_ROW]);
+//       }
+
+//       const existingSizes = Array.isArray(initialData.sizes) ? initialData.sizes : [];
+//       if (existingSizes.length > 0) {
+//         setSizes(
+//           existingSizes.map((item) => ({ size: item.size || "", price: String(item.price || "") })),
+//         );
+//       } else {
+//         setSizes([EMPTY_SIZE_ROW]);
+//       }
+
+//       const existingColors = Array.isArray(initialData.colors) ? initialData.colors : [];
+//       if (existingColors.length > 0) {
+//         setColors(
+//           existingColors.map((item) => ({
+//             color_name: item.color_name || "",
+//             image: null,
+//             preview: item.image || "",
+//           })),
+//         );
+//       } else {
+//         setColors([EMPTY_COLOR_ROW]);
+//       }
+
+//       setSelectedFrameIds(normalizeRelationIds(initialData.frames));
+//       setSelectedMaterialIds(normalizeRelationIds(initialData.materials));
+//       setPreview(initialData.image || null);
+//       setGalleryPreview(initialData.gallery || []);
+
+//       if (initialData.product_type === "variant" || (Array.isArray(initialData.variants) && initialData.variants.length > 0)) {
+//         setVariants(initialData.variants.map(v => ({
+//            id: v.id || "",
+//            sku: v.sku || "",
+//            stock: v.stock !== undefined && v.stock !== null ? String(v.stock) : "",
+//            options: Array.isArray(v.options) && v.options.length > 0 ? v.options : [{ option_name: "", option_value: "" }],
+//            images: [],
+//            existing_images: v.images || [],
+//            images_preview: Array.isArray(v.images) ? v.images.map(img => img.image || img.url || img) : []
+//         })));
+//       } else {
+//         setVariants([EMPTY_VARIANT]);
+//       }
+//     } else {
+//       setFormData(DEFAULT_FORM_DATA);
+//       setSpecs([EMPTY_SPEC_ROW]);
+//       setSizes([EMPTY_SIZE_ROW]);
+//       setColors([EMPTY_COLOR_ROW]);
+//       setSelectedFrameIds([]);
+//       setSelectedMaterialIds([]);
+//       setPreview(null);
+//       setGalleryPreview([]);
+//       setVariants([EMPTY_VARIANT]);
+//     }
+//   }, [initialData, open]);
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData((prev) => ({ ...prev, [name]: value }));
+//   };
+
+//   const handleToggleFlag = (name, checked) => {
+//     setFormData((prev) => ({ ...prev, [name]: checked }));
+//   };
+
+//   const handleImageChange = (e) => {
+//     const file = e.target.files[0];
+//     if (!file) return;
+
+//     setFormData((prev) => ({ ...prev, image: file }));
+//     setPreview(URL.createObjectURL(file));
+//   };
+
+//   const handleRemoveImage = (e) => {
+//     e.preventDefault();
+//     setPreview(null);
+//     setFormData((prev) => ({ ...prev, image: null }));
+//   };
+
+//   const handleGalleryChange = (e) => {
+//     const files = Array.from(e.target.files || []);
+//     if (files.length === 0) return;
+
+//     setFormData((prev) => ({ ...prev, gallery: [...prev.gallery, ...files] }));
+//     setGalleryPreview((prev) => [...prev, ...files.map((file) => URL.createObjectURL(file))]);
+//     e.target.value = "";
+//   };
+
+//   const handleRemoveGalleryImage = (index) => {
+//     setFormData((prev) => ({
+//       ...prev,
+//       gallery: prev.gallery.filter((_, i) => i !== index),
+//     }));
+//     setGalleryPreview((prev) => prev.filter((_, i) => i !== index));
+//   };
+
+//   const addSpecRow = () => {
+//     setSpecs((prev) => [...prev, { key: "", value: "" }]);
+//   };
+
+//   const updateSpecRow = (index, field, value) => {
+//     setSpecs((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+//   };
+
+//   const removeSpecRow = (index) => {
+//     setSpecs((prev) =>
+//       prev.length === 1 ? [EMPTY_SPEC_ROW] : prev.filter((_, i) => i !== index),
+//     );
+//   };
+
+//   const addSizeRow = () => {
+//     setSizes((prev) => [...prev, { size: "", price: "" }]);
+//   };
+
+//   const updateSizeRow = (index, field, value) => {
+//     setSizes((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+//   };
+
+//   const removeSizeRow = (index) => {
+//     setSizes((prev) =>
+//       prev.length === 1 ? [EMPTY_SIZE_ROW] : prev.filter((_, i) => i !== index),
+//     );
+//   };
+
+//   const addColorRow = () => {
+//     setColors((prev) => [...prev, { color_name: "", image: null, preview: "" }]);
+//   };
+
+//   const updateColorRow = (index, value) => {
+//     setColors((prev) => prev.map((row, i) => (i === index ? { ...row, color_name: value } : row)));
+//   };
+
+//   const updateColorImage = (index, file) => {
+//     if (!file) return;
+//     const nextPreview = URL.createObjectURL(file);
+//     setColors((prev) =>
+//       prev.map((row, i) => (i === index ? { ...row, image: file, preview: nextPreview } : row)),
+//     );
+//   };
+
+//   const removeColorRow = (index) => {
+//     setColors((prev) =>
+//       prev.length === 1 ? [EMPTY_COLOR_ROW] : prev.filter((_, i) => i !== index),
+//     );
+//   };
+
+//   const clearColorImage = (index) => {
+//     setColors((prev) =>
+//       prev.map((row, i) => (i === index ? { ...row, image: null, preview: "" } : row)),
+//     );
+//   };
+
+//   const addVariant = () => {
+//     setVariants((prev) => [...prev, { id: "", sku: "", stock: "", options: [{ option_name: "", option_value: "" }], images: [], existing_images: [], images_preview: [] }]);
+//   };
+
+//   const updateVariant = (index, field, value) => {
+//     setVariants((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+//   };
+
+//   const removeVariant = (index) => {
+//     setVariants((prev) => prev.length === 1 ? [EMPTY_VARIANT] : prev.filter((_, i) => i !== index));
+//   };
+
+//   const addVariantOption = (variantIndex) => {
+//     setVariants((prev) => prev.map((row, i) => {
+//       if (i === variantIndex) {
+//         return { ...row, options: [...row.options, { option_name: "", option_value: "" }] };
+//       }
+//       return row;
+//     }));
+//   };
+
+//   const updateVariantOption = (variantIndex, optionIndex, field, value) => {
+//     setVariants((prev) => prev.map((row, i) => {
+//       if (i === variantIndex) {
+//         const newOptions = row.options.map((opt, j) => (j === optionIndex ? { ...opt, [field]: value } : opt));
+//         return { ...row, options: newOptions };
+//       }
+//       return row;
+//     }));
+//   };
+
+//   const removeVariantOption = (variantIndex, optionIndex) => {
+//     setVariants((prev) => prev.map((row, i) => {
+//       if (i === variantIndex) {
+//         const newOptions = row.options.length === 1 ? [{ option_name: "", option_value: "" }] : row.options.filter((_, j) => j !== optionIndex);
+//         return { ...row, options: newOptions };
+//       }
+//       return row;
+//     }));
+//   };
+
+//   const handleVariantImagesChange = (variantIndex, e) => {
+//     const files = Array.from(e.target.files || []);
+//     if (files.length === 0) return;
+
+//     setVariants((prev) => prev.map((row, i) => {
+//       if (i === variantIndex) {
+//         return {
+//           ...row,
+//           images: [...row.images, ...files],
+//           images_preview: [...row.images_preview, ...files.map(file => URL.createObjectURL(file))]
+//         };
+//       }
+//       return row;
+//     }));
+//     e.target.value = "";
+//   };
+
+//   const handleRemoveVariantImage = (variantIndex, imageIndex, isExisting) => {
+//     setVariants((prev) => prev.map((row, i) => {
+//       if (i === variantIndex) {
+//         if (isExisting) {
+//            return {
+//              ...row,
+//              existing_images: row.existing_images.filter((_, j) => j !== imageIndex),
+//              images_preview: row.images_preview.filter((_, j) => j !== imageIndex)
+//            };
+//         } else {
+//            // It's a new uploaded image
+//            // imageIndex for new uploaded image is relative to existing_images.length
+//            const newImageIdx = imageIndex - row.existing_images.length;
+//            return {
+//              ...row,
+//              images: row.images.filter((_, j) => j !== newImageIdx),
+//              images_preview: row.images_preview.filter((_, j) => j !== imageIndex)
+//            };
+//         }
+//       }
+//       return row;
+//     }));
+//   };
+
+//   const specificationPayload = useMemo(() => {
+//     const specObj = {};
+//     specs.forEach(({ key, value }) => {
+//       if (key.trim()) specObj[key.trim()] = value;
+//     });
+//     return specObj;
+//   }, [specs]);
+
+//   const sizesPayload = useMemo(
+//     () =>
+//       sizes
+//         .filter((item) => item.size.trim() && item.price !== "")
+//         .map((item) => ({
+//           size: item.size.trim(),
+//           price: Number(item.price),
+//         })),
+//     [sizes],
+//   );
+
+//   const colorsPayload = useMemo(
+//     () =>
+//       colors
+//         .filter((item) => item.color_name.trim())
+//         .map((item) => ({ color_name: item.color_name.trim(), image: item.image })),
+//     [colors],
+//   );
+
+//   const handleSubmit = async () => {
+//     if (!formData.name || !formData.price) {
+//       toast.error("Name and Price are required");
+//       return;
+//     }
+
+//     if (!formData.weight || !formData.length || !formData.width || !formData.height) {
+//       toast.error("Weight, Length, Width, and Height are required");
+//       return;
+//     }
+    
+//     if (Number(formData.weight) <= 0 || Number(formData.length) <= 0 || Number(formData.width) <= 0 || Number(formData.height) <= 0) {
+//       toast.error("Weight, Length, Width, and Height must be greater than zero");
+//       return;
+//     }
+
+//     setLoading(true);
+//     const data = new FormData();
+//     data.append("name", formData.name);
+//     if (formData.category) data.append("category", formData.category);
+//     if (formData.subcategory) data.append("subcategory", formData.subcategory);
+//     if (formData.brand) data.append("brand", formData.brand);
+//     if (formData.supplier) data.append("supplier", formData.supplier);
+//     data.append("price", Number(formData.price));
+//     data.append("description", formData.description);
+//     data.append("specification", JSON.stringify(specificationPayload));
+    
+//     // Determine category characteristics
+//     const selectedCategoryObj = categories.find((c) => String(c.id) === String(formData.category));
+//     const catName = selectedCategoryObj?.name?.toLowerCase() || "";
+//     const isArt = catName.includes("art");
+
+//     if (isArt) {
+//       data.append("sizes", JSON.stringify(sizesPayload));
+//       data.append("colors", JSON.stringify(colorsPayload.map(({ color_name }) => ({ color_name }))));
+//       if (formData.stock !== "") data.append("stock", Number(formData.stock));
+//       data.append("frame_ids", JSON.stringify(selectedFrameIds));
+//       data.append("material_ids", JSON.stringify(selectedMaterialIds));
+//       colors.forEach((color, index) => {
+//         if (color.image) {
+//           data.append(`color_image_${index}`, color.image);
+//         }
+//       });
+//     } else {
+//       data.append("product_type", "variant");
+//       const validVariants = variants.filter(v => v.sku.trim() !== "");
+      
+//       const payloadVariants = validVariants.map((v) => {
+//         const payloadV = {
+//           sku: v.sku,
+//           stock: Number(v.stock) || 0,
+//           options: v.options.filter(opt => opt.option_name.trim() !== "" && opt.option_value.trim() !== "")
+//         };
+//         if (v.id) {
+//           payloadV.id = v.id;
+//           payloadV.existing_images = v.existing_images;
+//         }
+//         return payloadV;
+//       });
+//       data.append("variants", JSON.stringify(payloadVariants));
+      
+//       validVariants.forEach((v, index) => {
+//         v.images.forEach((file) => {
+//           data.append(`variant_images_${index}`, file);
+//         });
+//       });
+//     }
+
+//     data.append("is_featured", formData.is_featured);
+//     data.append("is_best_seller", formData.is_best_seller);
+//     data.append("is_published", formData.is_published);
+//     if (formData.supplier_cost) data.append("supplier_cost", Number(formData.supplier_cost));
+//     data.append("weight", Number(formData.weight));
+//     data.append("length", Number(formData.length));
+//     data.append("width", Number(formData.width));
+//     data.append("height", Number(formData.height));
+
+//     if (formData.image) data.append("image", formData.image);
+//     formData.gallery.forEach((file) => data.append("images", file));
+
+//     try {
+//       if (initialData) {
+//         await updateProductNew(initialData.id, data);
+//         toast.success("Product updated successfully");
+//       } else {
+//         await addProduct(data);
+//         toast.success("Product added successfully");
+//       }
+//       queryClient.invalidateQueries({ queryKey: ['products'] });
+//       onSuccess();
+//       onClose();
+//     } catch (error) {
+//       toast.error(getApiErrorMessage(error, "Failed to save product"));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return {
+//     formData,
+//     specs,
+//     sizes,
+//     colors,
+//     selectedFrameIds,
+//     selectedMaterialIds,
+//     preview,
+//     categories,
+//     brands,
+//     subCategories,
+//     frames,
+//     materials,
+//     suppliers,
+//     loading,
+//     galleryPreview,
+//     variants,
+//     handleChange,
+//     handleToggleFlag,
+//     handleImageChange,
+//     handleRemoveImage,
+//     handleGalleryChange,
+//     handleRemoveGalleryImage,
+//     addSpecRow,
+//     updateSpecRow,
+//     removeSpecRow,
+//     addSizeRow,
+//     updateSizeRow,
+//     removeSizeRow,
+//     addColorRow,
+//     updateColorRow,
+//     updateColorImage,
+//     removeColorRow,
+//     clearColorImage,
+//     setSelectedFrameIds,
+//     setSelectedMaterialIds,
+//     addVariant,
+//     updateVariant,
+//     removeVariant,
+//     addVariantOption,
+//     updateVariantOption,
+//     removeVariantOption,
+//     handleVariantImagesChange,
+//     handleRemoveVariantImage,
+//     handleSubmit,
+//   };
+// }
+
+
+
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -83,12 +621,12 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     if (catRes) setCategories(catRes.data.categories || []);
     if (brandRes) setBrands(brandRes.data.brands || []);
     if (supplierRes) setSuppliers(supplierRes.data || []);
-    
+
     if (subCatRes) {
       const subList = subCatRes.data.subcategories || subCatRes.data.sub_categories || (Array.isArray(subCatRes.data) ? subCatRes.data : []);
       setSubCategories(subList);
     }
-    
+
     if (frameRes) setFrames(Array.isArray(frameRes.data) ? frameRes.data : frameRes.data.frames || []);
     if (materialRes) setMaterials(Array.isArray(materialRes.data) ? materialRes.data : materialRes.data.materials || []);
   }, [catRes, brandRes, subCatRes, frameRes, materialRes, supplierRes]);
@@ -158,15 +696,21 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
       setGalleryPreview(initialData.gallery || []);
 
       if (initialData.product_type === "variant" || (Array.isArray(initialData.variants) && initialData.variants.length > 0)) {
-        setVariants(initialData.variants.map(v => ({
-           id: v.id || "",
-           sku: v.sku || "",
-           stock: v.stock !== undefined && v.stock !== null ? String(v.stock) : "",
-           options: Array.isArray(v.options) && v.options.length > 0 ? v.options : [{ option_name: "", option_value: "" }],
-           images: [],
-           existing_images: v.images || [],
-           images_preview: Array.isArray(v.images) ? v.images.map(img => img.image || img.url || img) : []
-        })));
+        // FIX: fall back to [] so a variant product with no variants array does not crash
+        const existingVariants = Array.isArray(initialData.variants) ? initialData.variants : [];
+        if (existingVariants.length > 0) {
+          setVariants(existingVariants.map(v => ({
+            id: v.id || "",
+            sku: v.sku || "",
+            stock: v.stock !== undefined && v.stock !== null ? String(v.stock) : "",
+            options: Array.isArray(v.options) && v.options.length > 0 ? v.options : [{ option_name: "", option_value: "" }],
+            images: [],
+            existing_images: v.images || [],
+            images_preview: Array.isArray(v.images) ? v.images.map(img => img.image || img.url || img) : []
+          })));
+        } else {
+          setVariants([EMPTY_VARIANT]);
+        }
       } else {
         setVariants([EMPTY_VARIANT]);
       }
@@ -341,20 +885,20 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     setVariants((prev) => prev.map((row, i) => {
       if (i === variantIndex) {
         if (isExisting) {
-           return {
-             ...row,
-             existing_images: row.existing_images.filter((_, j) => j !== imageIndex),
-             images_preview: row.images_preview.filter((_, j) => j !== imageIndex)
-           };
+          return {
+            ...row,
+            existing_images: row.existing_images.filter((_, j) => j !== imageIndex),
+            images_preview: row.images_preview.filter((_, j) => j !== imageIndex)
+          };
         } else {
-           // It's a new uploaded image
-           // imageIndex for new uploaded image is relative to existing_images.length
-           const newImageIdx = imageIndex - row.existing_images.length;
-           return {
-             ...row,
-             images: row.images.filter((_, j) => j !== newImageIdx),
-             images_preview: row.images_preview.filter((_, j) => j !== imageIndex)
-           };
+          // It's a new uploaded image
+          // imageIndex for new uploaded image is relative to existing_images.length
+          const newImageIdx = imageIndex - row.existing_images.length;
+          return {
+            ...row,
+            images: row.images.filter((_, j) => j !== newImageIdx),
+            images_preview: row.images_preview.filter((_, j) => j !== imageIndex)
+          };
         }
       }
       return row;
@@ -398,9 +942,21 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
       toast.error("Weight, Length, Width, and Height are required");
       return;
     }
-    
+
     if (Number(formData.weight) <= 0 || Number(formData.length) <= 0 || Number(formData.width) <= 0 || Number(formData.height) <= 0) {
       toast.error("Weight, Length, Width, and Height must be greater than zero");
+      return;
+    }
+
+    // Determine category characteristics (whole-word match, so "Smart Watches" is not Fine Art)
+    const selectedCategoryObj = categories.find((c) => String(c.id) === String(formData.category));
+    const catName = selectedCategoryObj?.name?.toLowerCase() || "";
+    const isArt = /\bart(s|work)?\b/.test(catName);
+
+    const validVariants = variants.filter((v) => v.sku.trim() !== "");
+
+    if (!isArt && validVariants.length === 0) {
+      toast.error("Please add at least one product variant");
       return;
     }
 
@@ -414,11 +970,9 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     data.append("price", Number(formData.price));
     data.append("description", formData.description);
     data.append("specification", JSON.stringify(specificationPayload));
-    
-    // Determine category characteristics
-    const selectedCategoryObj = categories.find((c) => String(c.id) === String(formData.category));
-    const catName = selectedCategoryObj?.name?.toLowerCase() || "";
-    const isArt = catName.includes("art");
+
+    // Always send the product type
+    data.append("product_type", isArt ? "fine_art" : "variant");
 
     if (isArt) {
       data.append("sizes", JSON.stringify(sizesPayload));
@@ -432,14 +986,16 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
         }
       });
     } else {
-      data.append("product_type", "variant");
-      const validVariants = variants.filter(v => v.sku.trim() !== "");
-      
       const payloadVariants = validVariants.map((v) => {
         const payloadV = {
-          sku: v.sku,
+          sku: v.sku.trim(),
           stock: Number(v.stock) || 0,
-          options: v.options.filter(opt => opt.option_name.trim() !== "" && opt.option_value.trim() !== "")
+          options: v.options
+            .filter((opt) => opt.option_name.trim() !== "" && opt.option_value.trim() !== "")
+            .map((opt) => ({
+              option_name: opt.option_name.trim(),
+              option_value: opt.option_value.trim(),
+            })),
         };
         if (v.id) {
           payloadV.id = v.id;
@@ -448,7 +1004,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
         return payloadV;
       });
       data.append("variants", JSON.stringify(payloadVariants));
-      
+
       validVariants.forEach((v, index) => {
         v.images.forEach((file) => {
           data.append(`variant_images_${index}`, file);
