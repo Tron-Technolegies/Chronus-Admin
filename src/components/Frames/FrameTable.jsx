@@ -68,7 +68,7 @@ export default function FrameTable({ onEdit }) {
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
+              {/* <TableCell>ID</TableCell> */}
               <TableCell>Image</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Extra Price</TableCell>
@@ -79,7 +79,7 @@ export default function FrameTable({ onEdit }) {
           <TableBody>
             {paginatedRows.map((row) => (
               <TableRow key={row.id}>
-                <TableCell>{row.id}</TableCell>
+                {/* <TableCell>{row.id}</TableCell> */}
                 <TableCell>
                   {row.image ? (
                     <Avatar src={row.image} variant="rounded" sx={{ width: 44, height: 44 }} />

@@ -67,7 +67,7 @@ export default function MaterialTable({ onEdit }) {
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
+              {/* <TableCell>ID</TableCell> */}
               <TableCell>Name</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Extra Price</TableCell>
@@ -78,7 +78,7 @@ export default function MaterialTable({ onEdit }) {
           <TableBody>
             {paginatedRows.map((row) => (
               <TableRow key={row.id}>
-                <TableCell>{row.id}</TableCell>
+                {/* <TableCell>{row.id}</TableCell> */}
                 <TableCell>{row.name}</TableCell>
                 <TableCell>{row.description || "-"}</TableCell>
                 <TableCell>{row.extra_price}</TableCell>

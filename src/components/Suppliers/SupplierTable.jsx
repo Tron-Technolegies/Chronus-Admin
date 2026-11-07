@@ -68,7 +68,7 @@ export default function SupplierTable({ onEdit }) {
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
+              {/* <TableCell>ID</TableCell> */}
               <TableCell>Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Phone</TableCell>
@@ -81,7 +81,7 @@ export default function SupplierTable({ onEdit }) {
           <TableBody>
             {paginatedRows.map((row) => (
               <TableRow key={row.id}>
-                <TableCell>{row.id}</TableCell>
+                {/* <TableCell>{row.id}</TableCell> */}
                 <TableCell>{row.name}</TableCell>
                 <TableCell>{row.email}</TableCell>
                 <TableCell>{row.phone}</TableCell>

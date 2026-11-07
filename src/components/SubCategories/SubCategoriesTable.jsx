@@ -60,7 +60,7 @@ export default function SubCategoriesTable({ onEdit }) {
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
+              {/* <TableCell>ID</TableCell> */}
               <TableCell>Name</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -69,7 +69,7 @@ export default function SubCategoriesTable({ onEdit }) {
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.id}>
-                <TableCell>{row.id}</TableCell>
+                {/* <TableCell>{row.id}</TableCell> */}
                 <TableCell>{row.name}</TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
