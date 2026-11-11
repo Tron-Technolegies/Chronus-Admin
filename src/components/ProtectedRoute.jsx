@@ -1,8 +1,17 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { isAuthenticated } from "../utils/auth";
+import { isAuthenticated, isSuperAdmin } from "../utils/auth";
+import AccessDenied from "../pages/AccessDenied";
 
-const ProtectedRoute = () => {
-  return isAuthenticated() ? <Outlet /> : <Navigate to="/login" replace />;
+const ProtectedRoute = ({ superAdminOnly = false, children }) => {
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (superAdminOnly && !isSuperAdmin()) {
+    return <AccessDenied />;
+  }
+
+  return children ? children : <Outlet />;
 };
 
 export default ProtectedRoute;

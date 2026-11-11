@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { loginAPI } from "../api/auth";
 import { getApiErrorMessage } from "../utils/apiError";
+import { getUserRole, normalizeRole, ROLES } from "../utils/auth";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -33,8 +34,28 @@ const Login = () => {
       localStorage.setItem("accessToken", response.data.tokens.access);
       localStorage.setItem("refreshToken", response.data.tokens.refresh);
 
+      const role =
+        response.data.user?.role ||
+        response.data.role ||
+        (response.data.user?.is_superuser ? "Super Admin" : null) ||
+        (response.data.user?.is_staff ? "Store Manager" : null) ||
+        (response.data.is_superuser ? "Super Admin" : null);
+
+      if (role) {
+        localStorage.setItem("userRole", role);
+      }
+      if (response.data.user) {
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+      }
+
       toast.success("Login successful");
-      navigate("/");
+
+      const activeRole = role || getUserRole();
+      if (normalizeRole(activeRole) === ROLES.STORE_MANAGER) {
+        navigate("/products");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error(error.response?.data);
       toast.error(getApiErrorMessage(error, "Invalid credentials"));

@@ -1,10 +1,57 @@
 import axios from "axios";
+import toast from "react-hot-toast";
+import { clearAuthTokens } from "../utils/auth";
 
 const API = axios.create({
-  // baseURL: "https://api.chronosgallery.com/api/admin/",
-  // baseURL: "http://127.0.0.1:8000/api/admin/",
-  baseURL: "https://apiv2.chronosgallery.com/api/admin",
+  baseURL: "https://apiv2.chronosgallery.com/api/admin/",
 });
+
+// Attach JWT access token to every API request
+API.interceptors.request.use(
+  (config) => {
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (accessToken) {
+      if (config.headers && typeof config.headers.set === "function") {
+        config.headers.set("Authorization", `Bearer ${accessToken}`);
+      } else {
+        config.headers = {
+          ...config.headers,
+          Authorization: `Bearer ${accessToken}`,
+        };
+      }
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor for handling 401 Unauthorized and 403 Forbidden
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response ? error.response.status : null;
+
+    if (status === 401) {
+      clearAuthTokens();
+      if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
+        window.location.href = "/login";
+      }
+    } else if (status === 403) {
+      const message =
+        error.response?.data?.detail ||
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "You do not have permission to perform this action.";
+      toast.error(message);
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export const BASE_URL = "http://65.0.131.33/api/";
 
@@ -69,7 +116,7 @@ export const deleteMaterial = (id) => API.delete(`/materials/delete/${id}/`);
 
 // --- Orders ---
 export const getOrders = () => API.get("/view_orders/");
-export const getOrderDetail = (id) => API.get(`/order_detail_api/${id}`);
+export const getOrderDetail = (id) => API.get(`/order_detail_api/${id}/`);
 export const updateOrderStatus = (id, data) => API.post(`/update_order/${id}/`, data);
 export const createShipment = (id) => API.post(`/orders/${id}/create-shipment/`);
 
@@ -94,3 +141,11 @@ export const getSuppliers = () => API.get("/supplier_list/");
 export const addSupplier = (data) => API.post("/add_supplier/", data);
 export const updateSupplier = (id, data) => API.put(`/update_supplier/${id}/`, data);
 export const deleteSupplier = (id) => API.delete(`/delete_supplier/${id}/`);
+
+// --- Shipping Partners ---
+export const getShippingPartners = () => API.get("/shipping-partners/");
+export const addShippingPartner = (data) => API.post("/shipping-partners/create/", data);
+export const getShippingPartner = (id) => API.get(`/shipping-partners/${id}/`);
+export const updateShippingPartner = (id, data) => API.put(`/shipping-partners/${id}/update/`, data);
+export const deleteShippingPartner = (id) => API.delete(`/shipping-partners/${id}/delete/`);
+  

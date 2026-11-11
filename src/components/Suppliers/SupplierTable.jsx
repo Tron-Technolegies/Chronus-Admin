@@ -21,6 +21,7 @@ import { deleteSupplier, getSuppliers } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { isSuperAdmin } from "../../utils/auth";
 
 export default function SupplierTable({ onEdit }) {
   const [rows, setRows] = useState([]);
@@ -74,7 +75,7 @@ export default function SupplierTable({ onEdit }) {
               <TableCell>Phone</TableCell>
               <TableCell>WeChat ID</TableCell>
               <TableCell>Country</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              {isSuperAdmin() && <TableCell align="right">Actions</TableCell>}
             </TableRow>
           </TableHead>
 
@@ -87,29 +88,31 @@ export default function SupplierTable({ onEdit }) {
                 <TableCell>{row.phone}</TableCell>
                 <TableCell>{row.wechat_id || "-"}</TableCell>
                 <TableCell>{row.country || "-"}</TableCell>
-                <TableCell align="right">
-                  <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-                    <Tooltip title="Edit Supplier">
-                      <IconButton
-                        size="small"
-                        onClick={() => onEdit && onEdit(row)}
-                        sx={{ color: "#0E45B7", bgcolor: "#eff6ff", "&:hover": { bgcolor: "#dbeafe" } }}
-                      >
-                        <FiEdit size={18} />
-                      </IconButton>
-                    </Tooltip>
+                {isSuperAdmin() && (
+                  <TableCell align="right">
+                    <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                      <Tooltip title="Edit Supplier">
+                        <IconButton
+                          size="small"
+                          onClick={() => onEdit && onEdit(row)}
+                          sx={{ color: "#0E45B7", bgcolor: "#eff6ff", "&:hover": { bgcolor: "#dbeafe" } }}
+                        >
+                          <FiEdit size={18} />
+                        </IconButton>
+                      </Tooltip>
 
-                    <Tooltip title="Delete Supplier">
-                      <IconButton
-                        size="small"
-                        onClick={() => setDeleteId(row.id)}
-                        sx={{ color: "#ef4444", bgcolor: "#fef2f2", "&:hover": { bgcolor: "#fee2e2" } }}
-                      >
-                        <FiTrash2 size={18} />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </TableCell>
+                      <Tooltip title="Delete Supplier">
+                        <IconButton
+                          size="small"
+                          onClick={() => setDeleteId(row.id)}
+                          sx={{ color: "#ef4444", bgcolor: "#fef2f2", "&:hover": { bgcolor: "#fee2e2" } }}
+                        >
+                          <FiTrash2 size={18} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

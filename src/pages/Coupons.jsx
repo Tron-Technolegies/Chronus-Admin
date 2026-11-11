@@ -3,6 +3,7 @@ import CouponTable from "../components/Coupons/CouponTable";
 import { Button } from "@mui/material";
 import { IoAdd } from "react-icons/io5";
 import CouponModal from "../components/Coupons/CouponModal";
+import { isSuperAdmin } from "../utils/auth";
 
 export default function Coupons() {
   const [open, setOpen] = useState(false);
@@ -21,18 +22,20 @@ export default function Coupons() {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">Coupons</h2>
-        <Button
-          variant="contained"
-          startIcon={<IoAdd />}
-          onClick={() => setOpen(true)}
-          sx={{
-            bgcolor: "#3D1613",
-            textTransform: 'none',
-            "&:hover": { bgcolor: "#2a0f0d" },
-          }}
-        >
-          Add Coupon
-        </Button>
+        {isSuperAdmin() && (
+          <Button
+            variant="contained"
+            startIcon={<IoAdd />}
+            onClick={() => setOpen(true)}
+            sx={{
+              bgcolor: "#3D1613",
+              textTransform: 'none',
+              "&:hover": { bgcolor: "#2a0f0d" },
+            }}
+          >
+            Add Coupon
+          </Button>
+        )}
       </div>
 
       <CouponTable key={refreshKey} onEdit={handleEdit} />

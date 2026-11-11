@@ -21,6 +21,7 @@ import { deleteCoupon, getCoupons } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { isSuperAdmin } from "../../utils/auth";
 
 export default function CouponTable({ onEdit }) {
   const [rows, setRows] = useState([]);
@@ -71,7 +72,7 @@ export default function CouponTable({ onEdit }) {
               <TableCell>Code</TableCell>
               <TableCell>Discount</TableCell>
               <TableCell>Expiration</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              {isSuperAdmin() && <TableCell align="right">Actions</TableCell>}
             </TableRow>
           </TableHead>
 
@@ -81,29 +82,31 @@ export default function CouponTable({ onEdit }) {
                 <TableCell>{row.code}</TableCell>
                 <TableCell>₹{row.discount}</TableCell>
                 <TableCell>{row.expiration_date}</TableCell>
-                <TableCell align="right">
-                  <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-                    <Tooltip title="Edit Coupon">
-                      <IconButton
-                        size="small"
-                        onClick={() => onEdit && onEdit(row)}
-                        sx={{ color: "#0E45B7", bgcolor: "#eff6ff", "&:hover": { bgcolor: "#dbeafe" } }}
-                      >
-                        <FiEdit size={18} />
-                      </IconButton>
-                    </Tooltip>
+                {isSuperAdmin() && (
+                  <TableCell align="right">
+                    <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                      <Tooltip title="Edit Coupon">
+                        <IconButton
+                          size="small"
+                          onClick={() => onEdit && onEdit(row)}
+                          sx={{ color: "#0E45B7", bgcolor: "#eff6ff", "&:hover": { bgcolor: "#dbeafe" } }}
+                        >
+                          <FiEdit size={18} />
+                        </IconButton>
+                      </Tooltip>
 
-                    <Tooltip title="Delete Coupon">
-                      <IconButton
-                        size="small"
-                        onClick={() => setDeleteId(row.id)}
-                        sx={{ color: "#ef4444", bgcolor: "#fef2f2", "&:hover": { bgcolor: "#fee2e2" } }}
-                      >
-                        <FiTrash2 size={18} />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </TableCell>
+                      <Tooltip title="Delete Coupon">
+                        <IconButton
+                          size="small"
+                          onClick={() => setDeleteId(row.id)}
+                          sx={{ color: "#ef4444", bgcolor: "#fef2f2", "&:hover": { bgcolor: "#fee2e2" } }}
+                        >
+                          <FiTrash2 size={18} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

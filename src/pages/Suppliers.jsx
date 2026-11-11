@@ -3,6 +3,7 @@ import SupplierTable from "../components/Suppliers/SupplierTable";
 import { Button } from "@mui/material";
 import { IoAdd } from "react-icons/io5";
 import SupplierModal from "../components/Suppliers/SupplierModal";
+import { isSuperAdmin } from "../utils/auth";
 
 export default function Suppliers() {
   const [open, setOpen] = useState(false);
@@ -21,18 +22,20 @@ export default function Suppliers() {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">Suppliers</h2>
-        <Button
-          variant="contained"
-          startIcon={<IoAdd />}
-          onClick={() => setOpen(true)}
-          sx={{
-            bgcolor: "#3D1613",
-            textTransform: 'none',
-            "&:hover": { bgcolor: "#2a0f0d" },
-          }}
-        >
-          Add Supplier
-        </Button>
+        {isSuperAdmin() && (
+          <Button
+            variant="contained"
+            startIcon={<IoAdd />}
+            onClick={() => setOpen(true)}
+            sx={{
+              bgcolor: "#3D1613",
+              textTransform: 'none',
+              "&:hover": { bgcolor: "#2a0f0d" },
+            }}
+          >
+            Add Supplier
+          </Button>
+        )}
       </div>
 
       <SupplierTable key={refreshKey} onEdit={handleEdit} />

@@ -24,6 +24,7 @@ import { useNavigate } from "react-router-dom";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
 import useProductsTable from "../../hooks/products/useProductsTable";
+import { isSuperAdmin } from "../../utils/auth";
 
 export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
   const navigate = useNavigate();
@@ -202,19 +203,21 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
                         </IconButton>
                       </Tooltip>
 
-                      <Tooltip title="Delete Product">
-                        <IconButton
-                          size="small"
-                          onClick={(e) => { e.stopPropagation(); setDeleteId(row.id); }}
-                          sx={{
-                            color: "#ef4444",
-                            bgcolor: "#fef2f2",
-                            "&:hover": { bgcolor: "#fee2e2" },
-                          }}
-                        >
-                          <FiTrash2 size={18} />
-                        </IconButton>
-                      </Tooltip>
+                      {isSuperAdmin() && (
+                        <Tooltip title="Delete Product">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => { e.stopPropagation(); setDeleteId(row.id); }}
+                            sx={{
+                              color: "#ef4444",
+                              bgcolor: "#fef2f2",
+                              "&:hover": { bgcolor: "#fee2e2" },
+                            }}
+                          >
+                            <FiTrash2 size={18} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Box>
                   </TableCell>
                 </TableRow>

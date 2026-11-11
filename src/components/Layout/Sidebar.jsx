@@ -9,19 +9,20 @@ import { MdLogout } from "react-icons/md";
 import { TbLayoutList } from "react-icons/tb";
 import { PiPictureInPictureBold } from "react-icons/pi";
 import { BsLayers } from "react-icons/bs";
+import { MdLocalShipping } from "react-icons/md";
+import { clearAuthTokens, isSuperAdmin } from "../../utils/auth";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+    clearAuthTokens();
     navigate("/login", { replace: true });
   };
 
   const menuItems = [
-    { name: "Dashboard", path: "/", icon: BsGrid },
+    { name: "Dashboard", path: "/", icon: BsGrid, superAdminOnly: true },
     { name: "Products", path: "/products", icon: BsBoxSeam },
     { name: "Categories", path: "/categories", icon: GoStack },
     { name: "Sub Categories", path: "/subcategories", icon: TbLayoutList },
@@ -29,11 +30,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: "Frames", path: "/frames", icon: PiPictureInPictureBold },
     { name: "Materials", path: "/materials", icon: BsLayers },
     { name: "Orders", path: "/orders", icon: BsCart3 },
-    { name: "Customers", path: "/customers", icon: BsPeople },
+    { name: "Customers", path: "/customers", icon: BsPeople, superAdminOnly: true },
     { name: "Suppliers", path: "/suppliers", icon: BsTruck },
     { name: "Coupons", path: "/coupon", icon: IoTicketOutline },
+    { name: "Shipping Partners", path: "/shipping-partners", icon: MdLocalShipping },
     // { name: "Settings", path: "/settings", icon: BsGear },
   ];
+
+  const visibleMenuItems = menuItems.filter((item) => {
+    if (item.superAdminOnly) {
+      return isSuperAdmin();
+    }
+    return true;
+  });
 
 
   return (
@@ -60,7 +69,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       </div>
       <nav className="flex-1 overflow-y-auto px-4 py-6 no-scrollbar">
         <ul className="flex flex-col gap-2">
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.path;
 
