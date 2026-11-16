@@ -109,10 +109,10 @@ export default function CouponModal({ open, onClose, onSuccess, initialData }) {
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             <Box>
                 <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: '#333' }}>
-                    Discount Amount
+                    Discount Amount (AED)
                 </Typography>
                 <TextField
-                    placeholder="0.00"
+                    placeholder="AED 0.00"
                     name="discount"
                     type="number"
                     fullWidth

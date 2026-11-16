@@ -118,10 +118,10 @@ export default function FrameModal({ open, onClose, onSuccess, initialData }) {
 
         <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>
-            Extra Price
+            Extra Price (AED)
           </Typography>
           <TextField
-            placeholder="0"
+            placeholder="AED 0.00"
             type="number"
             fullWidth
             value={extraPrice}

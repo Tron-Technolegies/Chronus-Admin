@@ -93,7 +93,7 @@ export default function Products() {
           </div>
 
           <div className="flex flex-col gap-1 min-w-[180px]">
-            <label className="text-xs text-gray-500 font-medium">Min price</label>
+            <label className="text-xs text-gray-500 font-medium">Min price (AED)</label>
             <input
               type="number"
               min="0"
@@ -105,7 +105,7 @@ export default function Products() {
           </div>
 
           <div className="flex flex-col gap-1 min-w-[180px]">
-            <label className="text-xs text-gray-500 font-medium">Max price</label>
+            <label className="text-xs text-gray-500 font-medium">Max price (AED)</label>
             <input
               type="number"
               min="0"
@@ -155,7 +155,7 @@ export default function Products() {
             </select>
           </div>
 
-          <div className="flex flex-col gap-1 min-w-[180px]">
+          {/* <div className="flex flex-col gap-1 min-w-[180px]">
             <label className="text-xs text-gray-500 font-medium">Stock Level</label>
             <select
               value={filterInputs.low_stock}
@@ -164,6 +164,19 @@ export default function Products() {
             >
               <option value="">All</option>
               <option value="true">Low Stock Only</option>
+            </select>
+          </div> */}
+          <div className="flex flex-col gap-1 min-w-[180px]">
+            <label className="text-xs text-gray-500 font-medium">Stock Level</label>
+            <select
+              value={filterInputs.stock_status}
+              onChange={(e) => updateDropdownFilter("stock_status", e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3D1613] bg-white"
+            >
+              <option value="">All Products</option>
+              <option value="in_stock">In Stock</option>
+              <option value="low_stock">Low Stock</option>
+              <option value="out_of_stock">Out of Stock</option>
             </select>
           </div>
 

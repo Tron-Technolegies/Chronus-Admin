@@ -49,8 +49,9 @@ export default function useProductsTable({ filters = {} }) {
     if (filters.is_published) params.is_published = filters.is_published;
     if (filters.is_featured) params.is_featured = filters.is_featured;
     if (filters.is_best_seller) params.is_best_seller = filters.is_best_seller;
-    if (filters.low_stock) params.low_stock = filters.low_stock;
-
+    // if (filters.low_stock) params.low_stock = filters.low_stock;
+    if (filters.stock_status) params.stock_status = filters.stock_status;
+    
     return params;
   }, [
     page,

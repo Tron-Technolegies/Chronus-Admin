@@ -49,10 +49,10 @@ const SalesChart = () => {
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 12, fill: "#888" }}
-              tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
+              tickFormatter={(v) => `AED ${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
             />
             <Tooltip
-              formatter={(value) => [`$${parseFloat(value).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, "Revenue"]}
+              formatter={(value) => [`AED ${parseFloat(value).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, "Revenue"]}
             />
             <Area
               type="monotone"

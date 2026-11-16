@@ -69,7 +69,7 @@ const RecentOrders = () => {
                       {itemCount} {typeof itemCount === "number" ? (itemCount === 1 ? "item" : "items") : ""}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                      ${parseFloat(order.total_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      AED {parseFloat(order.total_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4">
                       <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold leading-5 capitalize ${colorClass}`}>

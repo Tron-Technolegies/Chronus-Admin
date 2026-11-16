@@ -45,7 +45,7 @@ const RevenuePieChart = () => {
               </Pie>
               <Tooltip
                 formatter={(value) => [
-                  `$${parseFloat(value).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                  `AED ${parseFloat(value).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
                   "Revenue",
                 ]}
               />

@@ -1,6 +1,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BsCurrencyDollar, BsCart, BsClockHistory, BsBag } from "react-icons/bs";
+import { BsCart, BsClockHistory, BsBag } from "react-icons/bs";
+import { TbCurrencyDirham } from "react-icons/tb";
 import { FaArrowTrendUp } from "react-icons/fa6";
 import { getDashboardStats } from "../../api/api";
 
@@ -19,15 +20,15 @@ const DashboardStats = () => {
     typeof val === "number"
       ? val % 1 === 0
         ? val.toLocaleString()
-        : `$${parseFloat(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : `AED ${parseFloat(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       : "--";
 
   const stats = [
     {
       title: "Total Revenue",
-      value: data ? `$${parseFloat(data.total_revenue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "--",
+      value: data ? `AED ${parseFloat(data.total_revenue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "--",
       rate: data ? `${data.growth_rate >= 0 ? "+" : ""}${data.growth_rate}% vs prev 30 days` : "Loading...",
-      icon: <BsCurrencyDollar className="text-2xl text-[#e4b76f]" />,
+      icon: <TbCurrencyDirham className="text-2xl text-[#e4b76f]" />,
     },
     {
       title: "Total Orders",
@@ -43,7 +44,7 @@ const DashboardStats = () => {
     },
     {
       title: "Avg. Order Value",
-      value: data ? `$${parseFloat(data.avg_order_value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "--",
+      value: data ? `AED ${parseFloat(data.avg_order_value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "--",
       rate: data ? `${data.low_stock_products} low-stock products` : "Loading...",
       icon: <FaArrowTrendUp className="text-2xl text-[#e4b76f]" />,
     },

@@ -159,7 +159,7 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
                   <TableCell align="right">{row.supplier ? row.supplier.name : "-"}</TableCell>
 
                   <TableCell align="right">
-                    <span className="font-semibold text-gray-700">${row.price}</span>
+                    <span className="font-semibold text-gray-700">AED {Number(row.price || 0).toFixed(2)}</span>
                   </TableCell>
 
                   <TableCell align="right">

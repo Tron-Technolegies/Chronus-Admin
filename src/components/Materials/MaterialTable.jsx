@@ -81,7 +81,7 @@ export default function MaterialTable({ onEdit }) {
                 {/* <TableCell>{row.id}</TableCell> */}
                 <TableCell>{row.name}</TableCell>
                 <TableCell>{row.description || "-"}</TableCell>
-                <TableCell>{row.extra_price}</TableCell>
+                <TableCell>AED {Number(row.extra_price || 0).toFixed(2)}</TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
                     <Tooltip title="Edit Material">

@@ -189,11 +189,11 @@ export default function ProductDetail() {
               
               <Box sx={{ mb: 5 }}>
                 <Typography variant="h3" sx={{ fontWeight: 800, color: "#111", letterSpacing: "-0.03em" }}>
-                  ${product.price}
+                  AED {Number(product.price || 0).toFixed(2)}
                 </Typography>
                 {product.supplier_cost && (
                   <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-                    Supplier Cost: <span style={{ color: "#d32f2f", fontWeight: 500 }}>${product.supplier_cost}</span>
+                    Supplier Cost: <span style={{ color: "#d32f2f", fontWeight: 500 }}>AED {Number(product.supplier_cost || 0).toFixed(2)}</span>
                   </Typography>
                 )}
               </Box>
@@ -267,7 +267,7 @@ export default function ProductDetail() {
                       <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: "0.05em", mb: 1, display: "block" }}>Sizes</Typography>
                       <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                         {product.sizes.map((size) => (
-                          <Chip key={size.id} label={`${size.size} (+$${size.price})`} variant="outlined" sx={{ borderRadius: 1.5, borderColor: "#ddd", color: "#333", fontWeight: 500 }} />
+                          <Chip key={size.id} label={`${size.size} (+AED ${Number(size.price || 0).toFixed(2)})`} variant="outlined" sx={{ borderRadius: 1.5, borderColor: "#ddd", color: "#333", fontWeight: 500 }} />
                         ))}
                       </Box>
                     </Box>
@@ -287,7 +287,7 @@ export default function ProductDetail() {
                       <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: "0.05em", mb: 1, display: "block" }}>Frames</Typography>
                       <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                         {product.frames.map((frame) => (
-                          <Chip key={frame.id} avatar={frame.image ? <Avatar src={frame.image} /> : null} label={`${frame.name} (+$${frame.extra_price})`} variant="outlined" sx={{ borderRadius: 1.5, borderColor: "#ddd", color: "#333", fontWeight: 500 }} />
+                          <Chip key={frame.id} avatar={frame.image ? <Avatar src={frame.image} /> : null} label={`${frame.name} (+AED ${Number(frame.extra_price || 0).toFixed(2)})`} variant="outlined" sx={{ borderRadius: 1.5, borderColor: "#ddd", color: "#333", fontWeight: 500 }} />
                         ))}
                       </Box>
                     </Box>
@@ -297,7 +297,7 @@ export default function ProductDetail() {
                       <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: "0.05em", mb: 1, display: "block" }}>Materials</Typography>
                       <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                         {product.materials.map((mat) => (
-                          <Chip key={mat.id} label={`${mat.name} (+$${mat.extra_price})`} variant="outlined" sx={{ borderRadius: 1.5, borderColor: "#ddd", color: "#333", fontWeight: 500 }} />
+                          <Chip key={mat.id} label={`${mat.name} (+AED ${Number(mat.extra_price || 0).toFixed(2)})`} variant="outlined" sx={{ borderRadius: 1.5, borderColor: "#ddd", color: "#333", fontWeight: 500 }} />
                         ))}
                       </Box>
                     </Box>

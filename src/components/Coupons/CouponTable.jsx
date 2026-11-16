@@ -80,7 +80,7 @@ export default function CouponTable({ onEdit }) {
             {paginatedRows.map((row) => (
               <TableRow key={row.id}>
                 <TableCell>{row.code}</TableCell>
-                <TableCell>₹{row.discount}</TableCell>
+                <TableCell>AED {Number(row.discount || 0).toFixed(2)}</TableCell>
                 <TableCell>{row.expiration_date}</TableCell>
                 {isSuperAdmin() && (
                   <TableCell align="right">

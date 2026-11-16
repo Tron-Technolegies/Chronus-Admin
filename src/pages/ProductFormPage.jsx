@@ -236,12 +236,12 @@ export default function ProductFormPage() {
 
         <Box sx={{ display: "grid", gridTemplateColumns: isArt ? "1fr 1fr 1fr" : "1fr 1fr", gap: 2, mb: 2 }}>
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Price</Typography>
-            <TextField placeholder="$0.00" name="price" type="number" fullWidth value={formData.price} onChange={handleChange} sx={inputStyles} />
+            <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Price (AED)</Typography>
+            <TextField placeholder="AED 0.00" name="price" type="number" fullWidth value={formData.price} onChange={handleChange} sx={inputStyles} />
           </Box>
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Cost Price</Typography>
-            <TextField placeholder="$0.00" name="supplier_cost" type="number" fullWidth value={formData.supplier_cost} onChange={handleChange} sx={inputStyles} />
+            <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600, color: "#333" }}>Cost Price (AED)</Typography>
+            <TextField placeholder="AED 0.00" name="supplier_cost" type="number" fullWidth value={formData.supplier_cost} onChange={handleChange} sx={inputStyles} />
           </Box>
           {isArt && (
             <Box>
@@ -377,7 +377,7 @@ export default function ProductFormPage() {
                   sx={inputStyles}
                 />
                 <TextField
-                  placeholder="Price"
+                  placeholder="Price (AED)"
                   size="small"
                   type="number"
                   value={item.price}

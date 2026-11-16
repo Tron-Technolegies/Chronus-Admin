@@ -88,7 +88,7 @@ export default function FrameTable({ onEdit }) {
                   )}
                 </TableCell>
                 <TableCell>{row.name}</TableCell>
-                <TableCell>{row.extra_price}</TableCell>
+                <TableCell>AED {Number(row.extra_price || 0).toFixed(2)}</TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
                     <Tooltip title="Edit Frame">

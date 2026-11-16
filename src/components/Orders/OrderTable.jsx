@@ -248,7 +248,7 @@ export default function OrderTable({ onView, statusFilter }) {
                     </TableCell>
                     <TableCell>{new Date(row.created_at).toLocaleDateString()}</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      ${parseFloat(row.total_amount || 0).toFixed(2)}
+                      AED {parseFloat(row.total_amount || 0).toFixed(2)}
                     </TableCell>
 
                     <TableCell>
@@ -262,7 +262,7 @@ export default function OrderTable({ onView, statusFilter }) {
                                   ({typeof item.supplier === 'object' ? item.supplier.name : item.supplier})
                                 </span>
                               )}
-                              {" "}x {item.quantity || 0} (${parseFloat(item.price || 0).toFixed(2)})
+                              {" "}x {item.quantity || 0} (AED {parseFloat(item.price || 0).toFixed(2)})
                             </div>
                           ))}
                         </div>
