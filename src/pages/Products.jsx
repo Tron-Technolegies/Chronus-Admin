@@ -174,9 +174,9 @@ export default function Products() {
               className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3D1613] bg-white"
             >
               <option value="">All Products</option>
-              <option value="in_stock">In Stock</option>
+              {/* <option value="in_stock">In Stock</option> */}
               <option value="low_stock">Low Stock</option>
-              <option value="out_of_stock">Out of Stock</option>
+              {/* <option value="out_of_stock">Out of Stock</option> */}
             </select>
           </div>
 

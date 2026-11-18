@@ -32,7 +32,8 @@ export default function useProductsTable({ filters = {} }) {
     filters.is_published,
     filters.is_featured,
     filters.is_best_seller,
-    filters.low_stock,
+    // filters.low_stock,
+    filters.stock_status,
   ]);
 
   const queryParams = useMemo(() => {
@@ -50,7 +51,7 @@ export default function useProductsTable({ filters = {} }) {
     if (filters.is_featured) params.is_featured = filters.is_featured;
     if (filters.is_best_seller) params.is_best_seller = filters.is_best_seller;
     // if (filters.low_stock) params.low_stock = filters.low_stock;
-    if (filters.stock_status) params.stock_status = filters.stock_status;
+    if (filters.stock_status === "low_stock") {params.low_stock = "true";}
     
     return params;
   }, [
@@ -63,7 +64,8 @@ export default function useProductsTable({ filters = {} }) {
     filters.is_published,
     filters.is_featured,
     filters.is_best_seller,
-    filters.low_stock,
+    // filters.low_stock,
+    filters.stock_status,
   ]);
 
   const { data, isLoading, isError, error } = useQuery({
