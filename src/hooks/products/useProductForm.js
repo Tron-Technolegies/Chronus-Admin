@@ -590,6 +590,10 @@ const normalizeRelationIds = (value) => {
     .map((item) => String(item));
 };
 
+// CHANGED: gallery items can be plain URLs or objects ({ id, image })
+const galleryKey = (g) => (g && typeof g === "object" ? g.id ?? g.image ?? g.url : g);
+const gallerySrc = (g) => (g && typeof g === "object" ? g.image || g.url : g);
+
 export default function useProductForm({ open, onClose, onSuccess, initialData }) {
   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
   const [specs, setSpecs] = useState([EMPTY_SPEC_ROW]);
@@ -607,6 +611,11 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
   const [loading, setLoading] = useState(false);
   const [galleryPreview, setGalleryPreview] = useState([]);
   const [variants, setVariants] = useState([EMPTY_VARIANT]);
+
+  // CHANGED: track saved gallery images separately from newly picked files
+  const [existingGallery, setExistingGallery] = useState([]);
+  const [removedGallery, setRemovedGallery] = useState([]);
+  const [removeMainImage, setRemoveMainImage] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -693,10 +702,16 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
       setSelectedFrameIds(normalizeRelationIds(initialData.frames));
       setSelectedMaterialIds(normalizeRelationIds(initialData.materials));
       setPreview(initialData.image || null);
-      setGalleryPreview(initialData.gallery || []);
+
+      // CHANGED: keep saved gallery images separate so removing one is tracked correctly
+      const existing = Array.isArray(initialData.gallery) ? initialData.gallery : [];
+      setExistingGallery(existing);
+      setGalleryPreview(existing.map(gallerySrc));
+      setRemovedGallery([]);
+      setRemoveMainImage(false);
 
       if (initialData.product_type === "variant" || (Array.isArray(initialData.variants) && initialData.variants.length > 0)) {
-        // FIX: fall back to [] so a variant product with no variants array does not crash
+        // fall back to [] so a variant product with no variants array does not crash
         const existingVariants = Array.isArray(initialData.variants) ? initialData.variants : [];
         if (existingVariants.length > 0) {
           setVariants(existingVariants.map(v => ({
@@ -723,6 +738,9 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
       setSelectedMaterialIds([]);
       setPreview(null);
       setGalleryPreview([]);
+      setExistingGallery([]); // CHANGED
+      setRemovedGallery([]); // CHANGED
+      setRemoveMainImage(false); // CHANGED
       setVariants([EMPTY_VARIANT]);
     }
   }, [initialData, open]);
@@ -736,18 +754,24 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     setFormData((prev) => ({ ...prev, [name]: checked }));
   };
 
+  // CHANGED: reset the input so the same file can be picked again after removing it
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
 
     setFormData((prev) => ({ ...prev, image: file }));
     setPreview(URL.createObjectURL(file));
+    setRemoveMainImage(false);
   };
 
+  // CHANGED: also tells the server to delete the saved image in edit mode
   const handleRemoveImage = (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
     setPreview(null);
     setFormData((prev) => ({ ...prev, image: null }));
+    if (initialData?.image) setRemoveMainImage(true);
   };
 
   const handleGalleryChange = (e) => {
@@ -759,11 +783,23 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     e.target.value = "";
   };
 
+  // CHANGED: saved images come first in the preview, new files come after them
   const handleRemoveGalleryImage = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      gallery: prev.gallery.filter((_, i) => i !== index),
-    }));
+    const existingCount = existingGallery.length;
+
+    if (index < existingCount) {
+      // a saved image: remember it so the server can delete it
+      setRemovedGallery((prev) => [...prev, galleryKey(existingGallery[index])]);
+      setExistingGallery((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      // a newly picked file: just drop it from the upload list
+      const newIndex = index - existingCount;
+      setFormData((prev) => ({
+        ...prev,
+        gallery: prev.gallery.filter((_, i) => i !== newIndex),
+      }));
+    }
+
     setGalleryPreview((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -1023,6 +1059,15 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
 
     if (formData.image) data.append("image", formData.image);
     formData.gallery.forEach((file) => data.append("images", file));
+
+    // CHANGED: edit mode only. Tell the server which saved images were removed.
+    // A backend that does not know these fields simply ignores them.
+    if (initialData) {
+      if (removeMainImage && !formData.image) data.append("remove_image", "true");
+      if (removedGallery.length > 0) {
+        data.append("removed_gallery", JSON.stringify(removedGallery));
+      }
+    }
 
     try {
       if (initialData) {
