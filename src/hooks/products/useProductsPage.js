@@ -134,7 +134,9 @@
 // }
 
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+const STORAGE_KEY = "products_page_state";
 
 const EMPTY_FILTERS = {
   category: "",
@@ -147,62 +149,51 @@ const EMPTY_FILTERS = {
   stock_status: "",
 };
 
+const loadSaved = () => {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const saved = raw ? JSON.parse(raw) : null;
+    return saved && typeof saved === "object" ? saved : null;
+  } catch {
+    return null;
+  }
+};
+
 export default function useProductsPage() {
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState(EMPTY_FILTERS);
-  const [filterInputs, setFilterInputs] = useState(EMPTY_FILTERS);
+  const [showFilters, setShowFilters] = useState(() => Boolean(loadSaved()?.showFilters));
+  const [filters, setFilters] = useState(() => ({ ...EMPTY_FILTERS, ...(loadSaved()?.filters || {}) }));
+  const [filterInputs, setFilterInputs] = useState(() => ({
+    ...EMPTY_FILTERS,
+    ...(loadSaved()?.filterInputs || loadSaved()?.filters || {}),
+  }));
 
-  const handleSuccess = () => {
-    setRefreshKey((prev) => prev + 1);
-  };
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ showFilters, filters, filterInputs }));
+    } catch {
+      // storage unavailable: filters just won't persist
+    }
+  }, [showFilters, filters, filterInputs]);
 
-  const openCreateModal = () => {
-    setOpen(true);
-  };
-
-  const closeCreateModal = () => {
-    setOpen(false);
-  };
-
-  const openEditModal = (row) => {
-    setEditData(row);
-  };
-
-  const closeEditModal = () => {
-    setEditData(null);
-  };
-
+  const handleSuccess = () => setRefreshKey((prev) => prev + 1);
+  const openCreateModal = () => setOpen(true);
+  const closeCreateModal = () => setOpen(false);
+  const openEditModal = (row) => setEditData(row);
+  const closeEditModal = () => setEditData(null);
   const handleEditSuccess = () => {
     handleSuccess();
     closeEditModal();
   };
+  const toggleFilters = () => setShowFilters((prev) => !prev);
 
-  const toggleFilters = () => {
-    setShowFilters((prev) => !prev);
-  };
-
-  const updateCategoryFilter = (value) => {
-    setFilterInputs((prev) => ({ ...prev, category: value }));
-  };
-
-  const updateSubCategoryFilter = (value) => {
-    setFilterInputs((prev) => ({ ...prev, subcategory: value }));
-  };
-
-  const updateMinPriceFilter = (value) => {
-    setFilterInputs((prev) => ({ ...prev, min_price: value }));
-  };
-
-  const updateMaxPriceFilter = (value) => {
-    setFilterInputs((prev) => ({ ...prev, max_price: value }));
-  };
-
-  const updateDropdownFilter = (key, value) => {
-    setFilterInputs((prev) => ({ ...prev, [key]: value }));
-  };
+  const updateCategoryFilter = (value) => setFilterInputs((prev) => ({ ...prev, category: value }));
+  const updateSubCategoryFilter = (value) => setFilterInputs((prev) => ({ ...prev, subcategory: value }));
+  const updateMinPriceFilter = (value) => setFilterInputs((prev) => ({ ...prev, min_price: value }));
+  const updateMaxPriceFilter = (value) => setFilterInputs((prev) => ({ ...prev, max_price: value }));
+  const updateDropdownFilter = (key, value) => setFilterInputs((prev) => ({ ...prev, [key]: value }));
 
   const applyFilters = () => {
     setFilters({

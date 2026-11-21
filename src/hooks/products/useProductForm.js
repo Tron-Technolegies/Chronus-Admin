@@ -37,6 +37,8 @@
 
 // const EMPTY_SPEC_ROW = { key: "", value: "" };
 // const EMPTY_SIZE_ROW = { size: "", price: "" };
+// // NEW: row for size-based pricing (Variant products only)
+// const EMPTY_PRICED_SIZE = { id: "", size: "", price: "", stock: "" };
 // const EMPTY_COLOR_ROW = { color_name: "", image: null, preview: "" };
 // const EMPTY_VARIANT = { id: "", sku: "", stock: "", options: [{ option_name: "", option_value: "" }], images: [], existing_images: [], images_preview: [] };
 
@@ -51,6 +53,10 @@
 //     .filter((item) => item !== null && item !== undefined && item !== "")
 //     .map((item) => String(item));
 // };
+
+// // gallery items can be plain URLs or objects ({ id, image })
+// const galleryKey = (g) => (g && typeof g === "object" ? g.id ?? g.image ?? g.url : g);
+// const gallerySrc = (g) => (g && typeof g === "object" ? g.image || g.url : g);
 
 // export default function useProductForm({ open, onClose, onSuccess, initialData }) {
 //   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
@@ -70,6 +76,15 @@
 //   const [galleryPreview, setGalleryPreview] = useState([]);
 //   const [variants, setVariants] = useState([EMPTY_VARIANT]);
 
+//   // NEW: size-based pricing state
+//   const [hasSizePricing, setHasSizePricing] = useState(false);
+//   const [pricedSizes, setPricedSizes] = useState([EMPTY_PRICED_SIZE]);
+
+//   // track saved gallery images separately from newly picked files
+//   const [existingGallery, setExistingGallery] = useState([]);
+//   const [removedGallery, setRemovedGallery] = useState([]);
+//   const [removeMainImage, setRemoveMainImage] = useState(false);
+
 //   const queryClient = useQueryClient();
 
 //   const { data: catRes, isLoading: isCatLoading } = useQuery({ queryKey: ['categories'], queryFn: getCategories, enabled: open });
@@ -83,12 +98,12 @@
 //     if (catRes) setCategories(catRes.data.categories || []);
 //     if (brandRes) setBrands(brandRes.data.brands || []);
 //     if (supplierRes) setSuppliers(supplierRes.data || []);
-    
+
 //     if (subCatRes) {
 //       const subList = subCatRes.data.subcategories || subCatRes.data.sub_categories || (Array.isArray(subCatRes.data) ? subCatRes.data : []);
 //       setSubCategories(subList);
 //     }
-    
+
 //     if (frameRes) setFrames(Array.isArray(frameRes.data) ? frameRes.data : frameRes.data.frames || []);
 //     if (materialRes) setMaterials(Array.isArray(materialRes.data) ? materialRes.data : materialRes.data.materials || []);
 //   }, [catRes, brandRes, subCatRes, frameRes, materialRes, supplierRes]);
@@ -130,13 +145,31 @@
 //         setSpecs([EMPTY_SPEC_ROW]);
 //       }
 
+//       // CHANGED: size-priced products load into their own state; Fine Art keeps the legacy rows
 //       const existingSizes = Array.isArray(initialData.sizes) ? initialData.sizes : [];
-//       if (existingSizes.length > 0) {
-//         setSizes(
-//           existingSizes.map((item) => ({ size: item.size || "", price: String(item.price || "") })),
+//       if (initialData.has_size_pricing) {
+//         setHasSizePricing(true);
+//         setPricedSizes(
+//           existingSizes.length > 0
+//             ? existingSizes.map((item) => ({
+//                 id: item.id || "",
+//                 size: item.size || "",
+//                 price: item.price !== undefined && item.price !== null ? String(item.price) : "",
+//                 stock: item.stock !== undefined && item.stock !== null ? String(item.stock) : "",
+//               }))
+//             : [EMPTY_PRICED_SIZE],
 //         );
-//       } else {
 //         setSizes([EMPTY_SIZE_ROW]);
+//       } else {
+//         setHasSizePricing(false);
+//         setPricedSizes([EMPTY_PRICED_SIZE]);
+//         if (existingSizes.length > 0) {
+//           setSizes(
+//             existingSizes.map((item) => ({ size: item.size || "", price: String(item.price || "") })),
+//           );
+//         } else {
+//           setSizes([EMPTY_SIZE_ROW]);
+//         }
 //       }
 
 //       const existingColors = Array.isArray(initialData.colors) ? initialData.colors : [];
@@ -155,18 +188,30 @@
 //       setSelectedFrameIds(normalizeRelationIds(initialData.frames));
 //       setSelectedMaterialIds(normalizeRelationIds(initialData.materials));
 //       setPreview(initialData.image || null);
-//       setGalleryPreview(initialData.gallery || []);
+
+//       // keep saved gallery images separate so removing one is tracked correctly
+//       const existing = Array.isArray(initialData.gallery) ? initialData.gallery : [];
+//       setExistingGallery(existing);
+//       setGalleryPreview(existing.map(gallerySrc));
+//       setRemovedGallery([]);
+//       setRemoveMainImage(false);
 
 //       if (initialData.product_type === "variant" || (Array.isArray(initialData.variants) && initialData.variants.length > 0)) {
-//         setVariants(initialData.variants.map(v => ({
-//            id: v.id || "",
-//            sku: v.sku || "",
-//            stock: v.stock !== undefined && v.stock !== null ? String(v.stock) : "",
-//            options: Array.isArray(v.options) && v.options.length > 0 ? v.options : [{ option_name: "", option_value: "" }],
-//            images: [],
-//            existing_images: v.images || [],
-//            images_preview: Array.isArray(v.images) ? v.images.map(img => img.image || img.url || img) : []
-//         })));
+//         // fall back to [] so a variant product with no variants array does not crash
+//         const existingVariants = Array.isArray(initialData.variants) ? initialData.variants : [];
+//         if (existingVariants.length > 0) {
+//           setVariants(existingVariants.map(v => ({
+//             id: v.id || "",
+//             sku: v.sku || "",
+//             stock: v.stock !== undefined && v.stock !== null ? String(v.stock) : "",
+//             options: Array.isArray(v.options) && v.options.length > 0 ? v.options : [{ option_name: "", option_value: "" }],
+//             images: [],
+//             existing_images: v.images || [],
+//             images_preview: Array.isArray(v.images) ? v.images.map(img => img.image || img.url || img) : []
+//           })));
+//         } else {
+//           setVariants([EMPTY_VARIANT]);
+//         }
 //       } else {
 //         setVariants([EMPTY_VARIANT]);
 //       }
@@ -174,11 +219,16 @@
 //       setFormData(DEFAULT_FORM_DATA);
 //       setSpecs([EMPTY_SPEC_ROW]);
 //       setSizes([EMPTY_SIZE_ROW]);
+//       setHasSizePricing(false); // NEW
+//       setPricedSizes([EMPTY_PRICED_SIZE]); // NEW
 //       setColors([EMPTY_COLOR_ROW]);
 //       setSelectedFrameIds([]);
 //       setSelectedMaterialIds([]);
 //       setPreview(null);
 //       setGalleryPreview([]);
+//       setExistingGallery([]);
+//       setRemovedGallery([]);
+//       setRemoveMainImage(false);
 //       setVariants([EMPTY_VARIANT]);
 //     }
 //   }, [initialData, open]);
@@ -192,18 +242,24 @@
 //     setFormData((prev) => ({ ...prev, [name]: checked }));
 //   };
 
+//   // reset the input so the same file can be picked again after removing it
 //   const handleImageChange = (e) => {
-//     const file = e.target.files[0];
+//     const file = e.target.files?.[0];
+//     e.target.value = "";
 //     if (!file) return;
 
 //     setFormData((prev) => ({ ...prev, image: file }));
 //     setPreview(URL.createObjectURL(file));
+//     setRemoveMainImage(false);
 //   };
 
+//   // also tells the server to delete the saved image in edit mode
 //   const handleRemoveImage = (e) => {
-//     e.preventDefault();
+//     e?.preventDefault?.();
+//     e?.stopPropagation?.();
 //     setPreview(null);
 //     setFormData((prev) => ({ ...prev, image: null }));
+//     if (initialData?.image) setRemoveMainImage(true);
 //   };
 
 //   const handleGalleryChange = (e) => {
@@ -215,11 +271,23 @@
 //     e.target.value = "";
 //   };
 
+//   // saved images come first in the preview, new files come after them
 //   const handleRemoveGalleryImage = (index) => {
-//     setFormData((prev) => ({
-//       ...prev,
-//       gallery: prev.gallery.filter((_, i) => i !== index),
-//     }));
+//     const existingCount = existingGallery.length;
+
+//     if (index < existingCount) {
+//       // a saved image: remember it so the server can delete it
+//       setRemovedGallery((prev) => [...prev, galleryKey(existingGallery[index])]);
+//       setExistingGallery((prev) => prev.filter((_, i) => i !== index));
+//     } else {
+//       // a newly picked file: just drop it from the upload list
+//       const newIndex = index - existingCount;
+//       setFormData((prev) => ({
+//         ...prev,
+//         gallery: prev.gallery.filter((_, i) => i !== newIndex),
+//       }));
+//     }
+
 //     setGalleryPreview((prev) => prev.filter((_, i) => i !== index));
 //   };
 
@@ -248,6 +316,21 @@
 //   const removeSizeRow = (index) => {
 //     setSizes((prev) =>
 //       prev.length === 1 ? [EMPTY_SIZE_ROW] : prev.filter((_, i) => i !== index),
+//     );
+//   };
+
+//   // NEW: size-based pricing row helpers
+//   const addPricedSize = () => {
+//     setPricedSizes((prev) => [...prev, { id: "", size: "", price: "", stock: "" }]);
+//   };
+
+//   const updatePricedSize = (index, field, value) => {
+//     setPricedSizes((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+//   };
+
+//   const removePricedSize = (index) => {
+//     setPricedSizes((prev) =>
+//       prev.length === 1 ? [EMPTY_PRICED_SIZE] : prev.filter((_, i) => i !== index),
 //     );
 //   };
 
@@ -341,20 +424,20 @@
 //     setVariants((prev) => prev.map((row, i) => {
 //       if (i === variantIndex) {
 //         if (isExisting) {
-//            return {
-//              ...row,
-//              existing_images: row.existing_images.filter((_, j) => j !== imageIndex),
-//              images_preview: row.images_preview.filter((_, j) => j !== imageIndex)
-//            };
+//           return {
+//             ...row,
+//             existing_images: row.existing_images.filter((_, j) => j !== imageIndex),
+//             images_preview: row.images_preview.filter((_, j) => j !== imageIndex)
+//           };
 //         } else {
-//            // It's a new uploaded image
-//            // imageIndex for new uploaded image is relative to existing_images.length
-//            const newImageIdx = imageIndex - row.existing_images.length;
-//            return {
-//              ...row,
-//              images: row.images.filter((_, j) => j !== newImageIdx),
-//              images_preview: row.images_preview.filter((_, j) => j !== imageIndex)
-//            };
+//           // It's a new uploaded image
+//           // imageIndex for new uploaded image is relative to existing_images.length
+//           const newImageIdx = imageIndex - row.existing_images.length;
+//           return {
+//             ...row,
+//             images: row.images.filter((_, j) => j !== newImageIdx),
+//             images_preview: row.images_preview.filter((_, j) => j !== imageIndex)
+//           };
 //         }
 //       }
 //       return row;
@@ -389,7 +472,14 @@
 //   );
 
 //   const handleSubmit = async () => {
-//     if (!formData.name || !formData.price) {
+//     // Determine category characteristics (whole-word match, so "Smart Watches" is not Fine Art)
+//     const selectedCategoryObj = categories.find((c) => String(c.id) === String(formData.category));
+//     const catName = selectedCategoryObj?.name?.toLowerCase() || "";
+//     const isArt = /\bart(s|work)?\b/.test(catName);
+//     const useSizePricing = !isArt && hasSizePricing; // size pricing is for Variant products only
+
+//     // CHANGED: base price is derived from the sizes when size pricing is on
+//     if (!formData.name || (!useSizePricing && !formData.price)) {
 //       toast.error("Name and Price are required");
 //       return;
 //     }
@@ -398,11 +488,52 @@
 //       toast.error("Weight, Length, Width, and Height are required");
 //       return;
 //     }
-    
+
 //     if (Number(formData.weight) <= 0 || Number(formData.length) <= 0 || Number(formData.width) <= 0 || Number(formData.height) <= 0) {
 //       toast.error("Weight, Length, Width, and Height must be greater than zero");
 //       return;
 //     }
+
+//     const validVariants = variants.filter((v) => v.sku.trim() !== "");
+
+//     if (!isArt && validVariants.length === 0) {
+//       toast.error("Please add at least one product variant");
+//       return;
+//     }
+
+//     // NEW: validate size rows and build the sizes payload
+//     let sizePricingPayload = [];
+//     if (useSizePricing) {
+//       const rows = pricedSizes.filter((r) => r.size.trim() || r.price !== "" || r.stock !== "");
+//       if (rows.length === 0) {
+//         toast.error("Add at least one size");
+//         return;
+//       }
+//       const seen = new Set();
+//       for (const r of rows) {
+//         const name = r.size.trim();
+//         if (!name) { toast.error("Every size needs a name"); return; }
+//         if (!(Number(r.price) > 0)) { toast.error(`Price for "${name}" must be greater than zero`); return; }
+//         if (r.stock === "" || !Number.isInteger(Number(r.stock)) || Number(r.stock) < 0) {
+//           toast.error(`Stock for "${name}" must be a whole number, 0 or more`);
+//           return;
+//         }
+//         const key = name.toLowerCase();
+//         if (seen.has(key)) { toast.error(`Size "${name}" is added twice`); return; }
+//         seen.add(key);
+//       }
+//       sizePricingPayload = rows.map((r) => ({
+//         ...(r.id ? { id: r.id } : {}),
+//         size: r.size.trim(),
+//         price: Number(r.price),
+//         stock: Number(r.stock),
+//       }));
+//     }
+
+//     // base price = smallest size price when size pricing is on
+//     const basePrice = useSizePricing
+//       ? Math.min(...sizePricingPayload.map((s) => s.price))
+//       : Number(formData.price);
 
 //     setLoading(true);
 //     const data = new FormData();
@@ -411,14 +542,12 @@
 //     if (formData.subcategory) data.append("subcategory", formData.subcategory);
 //     if (formData.brand) data.append("brand", formData.brand);
 //     if (formData.supplier) data.append("supplier", formData.supplier);
-//     data.append("price", Number(formData.price));
+//     data.append("price", basePrice); // CHANGED
 //     data.append("description", formData.description);
 //     data.append("specification", JSON.stringify(specificationPayload));
-    
-//     // Determine category characteristics
-//     const selectedCategoryObj = categories.find((c) => String(c.id) === String(formData.category));
-//     const catName = selectedCategoryObj?.name?.toLowerCase() || "";
-//     const isArt = catName.includes("art");
+
+//     // Always send the product type
+//     data.append("product_type", isArt ? "fine_art" : "variant");
 
 //     if (isArt) {
 //       data.append("sizes", JSON.stringify(sizesPayload));
@@ -432,14 +561,16 @@
 //         }
 //       });
 //     } else {
-//       data.append("product_type", "variant");
-//       const validVariants = variants.filter(v => v.sku.trim() !== "");
-      
 //       const payloadVariants = validVariants.map((v) => {
 //         const payloadV = {
-//           sku: v.sku,
+//           sku: v.sku.trim(),
 //           stock: Number(v.stock) || 0,
-//           options: v.options.filter(opt => opt.option_name.trim() !== "" && opt.option_value.trim() !== "")
+//           options: v.options
+//             .filter((opt) => opt.option_name.trim() !== "" && opt.option_value.trim() !== "")
+//             .map((opt) => ({
+//               option_name: opt.option_name.trim(),
+//               option_value: opt.option_value.trim(),
+//             })),
 //         };
 //         if (v.id) {
 //           payloadV.id = v.id;
@@ -448,7 +579,15 @@
 //         return payloadV;
 //       });
 //       data.append("variants", JSON.stringify(payloadVariants));
-      
+
+//       // NEW: size-based pricing fields
+//       if (useSizePricing) {
+//         data.append("has_size_pricing", "true");
+//         data.append("sizes", JSON.stringify(sizePricingPayload));
+//       } else if (initialData?.has_size_pricing) {
+//         data.append("has_size_pricing", "false"); // admin switched it off while editing
+//       }
+
 //       validVariants.forEach((v, index) => {
 //         v.images.forEach((file) => {
 //           data.append(`variant_images_${index}`, file);
@@ -467,6 +606,15 @@
 
 //     if (formData.image) data.append("image", formData.image);
 //     formData.gallery.forEach((file) => data.append("images", file));
+
+//     // edit mode only. Tell the server which saved images were removed.
+//     // A backend that does not know these fields simply ignores them.
+//     if (initialData) {
+//       if (removeMainImage && !formData.image) data.append("remove_image", "true");
+//       if (removedGallery.length > 0) {
+//         data.append("removed_gallery", JSON.stringify(removedGallery));
+//       }
+//     }
 
 //     try {
 //       if (initialData) {
@@ -503,6 +651,12 @@
 //     loading,
 //     galleryPreview,
 //     variants,
+//     hasSizePricing, // NEW
+//     setHasSizePricing, // NEW
+//     pricedSizes, // NEW
+//     addPricedSize, // NEW
+//     updatePricedSize, // NEW
+//     removePricedSize, // NEW
 //     handleChange,
 //     handleToggleFlag,
 //     handleImageChange,
@@ -533,6 +687,7 @@
 //     handleSubmit,
 //   };
 // }
+
 
 
 
@@ -578,6 +733,71 @@ const EMPTY_SIZE_ROW = { size: "", price: "" };
 const EMPTY_COLOR_ROW = { color_name: "", image: null, preview: "" };
 const EMPTY_VARIANT = { id: "", sku: "", stock: "", options: [{ option_name: "", option_value: "" }], images: [], existing_images: [], images_preview: [] };
 
+// ---- Size-based pricing helpers (new flow) ----
+const str = (v) => (v === undefined || v === null ? "" : String(v));
+
+// one size row: name, price, stock, optional cost. `id` only exists for saved sizes.
+const makeSizeRow = () => ({ id: "", size: "", price: "", stock: "", supplier_cost: "" });
+
+// one colour card (colour + its own sizes + images)
+const makeSizeColor = () => ({
+  id: "",
+  color_name: "",
+  image: null, // newly picked primary image
+  preview: "", // primary image preview (saved URL or new file)
+  has_existing_image: false,
+  remove_image: false,
+  gallery: [], // newly picked gallery files
+  existing_gallery: [], // saved gallery images [{ id, image }]
+  images_preview: [], // saved first, then new
+  sizes: [makeSizeRow()],
+});
+
+const mapApiSize = (item) => ({
+  id: item.id || "",
+  size: item.size || "",
+  price: str(item.price),
+  stock: str(item.stock),
+  supplier_cost: str(item.supplier_cost),
+});
+
+const isFilledSize = (r) => r.size.trim() || r.price !== "" || r.stock !== "";
+
+// validates size rows and returns { payload } or { error }
+const buildSizePayload = (rows, where = "") => {
+  const filled = rows.filter(isFilledSize);
+  if (filled.length === 0) return { error: `Add at least one size${where}` };
+
+  const seen = new Set();
+  const payload = [];
+  for (const r of filled) {
+    const name = r.size.trim();
+    if (!name) return { error: `Every size needs a name${where}` };
+    if (!(Number(r.price) > 0)) return { error: `Price for "${name}"${where} must be greater than zero` };
+    if (r.stock === "" || !Number.isInteger(Number(r.stock)) || Number(r.stock) < 0) {
+      return { error: `Stock for "${name}"${where} must be a whole number, 0 or more` };
+    }
+    if (r.supplier_cost !== "" && !(Number(r.supplier_cost) >= 0)) {
+      return { error: `Cost for "${name}"${where} must be 0 or more` };
+    }
+    const key = name.toLowerCase();
+    if (seen.has(key)) return { error: `Size "${name}"${where} is added twice` };
+    seen.add(key);
+
+    payload.push({
+      ...(r.id ? { id: r.id } : {}), // existing size keeps its id, new size has none
+      size: name,
+      price: Number(r.price),
+      stock: Number(r.stock),
+      ...(r.supplier_cost !== "" ? { supplier_cost: Number(r.supplier_cost) } : {}),
+    });
+  }
+  return { payload };
+};
+
+const isBlankSizeColor = (c) =>
+  !c.id && !c.color_name.trim() && !c.image && c.gallery.length === 0 && !c.sizes.some(isFilledSize);
+
 const normalizeRelationIds = (value) => {
   if (!Array.isArray(value)) return [];
 
@@ -590,7 +810,7 @@ const normalizeRelationIds = (value) => {
     .map((item) => String(item));
 };
 
-// CHANGED: gallery items can be plain URLs or objects ({ id, image })
+// gallery items can be plain URLs or objects ({ id, image })
 const galleryKey = (g) => (g && typeof g === "object" ? g.id ?? g.image ?? g.url : g);
 const gallerySrc = (g) => (g && typeof g === "object" ? g.image || g.url : g);
 
@@ -612,7 +832,17 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
   const [galleryPreview, setGalleryPreview] = useState([]);
   const [variants, setVariants] = useState([EMPTY_VARIANT]);
 
-  // CHANGED: track saved gallery images separately from newly picked files
+  // NEW: size-based pricing state
+  const [hasSizePricing, setHasSizePricing] = useState(false);
+  const [sizePricingMode, setSizePricingMode] = useState("sizes"); // "sizes" (size-only) | "colors" (colour + sizes)
+  const [pricedSizes, setPricedSizes] = useState([makeSizeRow()]);
+  const [sizeColors, setSizeColors] = useState([makeSizeColor()]);
+
+  // The backend does not allow converting an existing product to or from size pricing,
+  // so the toggle and the mode are locked in edit mode.
+  const sizePricingLocked = Boolean(initialData);
+
+  // track saved gallery images separately from newly picked files
   const [existingGallery, setExistingGallery] = useState([]);
   const [removedGallery, setRemovedGallery] = useState([]);
   const [removeMainImage, setRemoveMainImage] = useState(false);
@@ -678,12 +908,55 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
       }
 
       const existingSizes = Array.isArray(initialData.sizes) ? initialData.sizes : [];
-      if (existingSizes.length > 0) {
-        setSizes(
-          existingSizes.map((item) => ({ size: item.size || "", price: String(item.price || "") })),
-        );
-      } else {
+
+      if (initialData.has_size_pricing) {
+        // NEW: size-priced product. Saved ids are kept so the backend updates instead of recreating.
+        setHasSizePricing(true);
         setSizes([EMPTY_SIZE_ROW]);
+
+        const apiColors = Array.isArray(initialData.colors) ? initialData.colors : [];
+        // size-only sizes come from product_sizes (colour sizes live under each colour)
+        const flatSizes = Array.isArray(initialData.product_sizes) ? initialData.product_sizes : existingSizes;
+
+        if (apiColors.length > 0) {
+          setSizePricingMode("colors");
+          setSizeColors(
+            apiColors.map((c) => {
+              const gallery = Array.isArray(c.gallery) ? c.gallery : [];
+              const colorSizes = Array.isArray(c.sizes) ? c.sizes : [];
+              return {
+                id: c.id || "",
+                color_name: c.color_name || "",
+                image: null,
+                preview: c.image || "",
+                has_existing_image: Boolean(c.image),
+                remove_image: false,
+                gallery: [],
+                existing_gallery: gallery,
+                images_preview: gallery.map(gallerySrc),
+                sizes: colorSizes.length > 0 ? colorSizes.map(mapApiSize) : [makeSizeRow()],
+              };
+            }),
+          );
+          setPricedSizes([makeSizeRow()]);
+        } else {
+          setSizePricingMode("sizes");
+          const ownSizes = flatSizes.filter((s) => !s.color_id);
+          setPricedSizes(ownSizes.length > 0 ? ownSizes.map(mapApiSize) : [makeSizeRow()]);
+          setSizeColors([makeSizeColor()]);
+        }
+      } else {
+        setHasSizePricing(false);
+        setSizePricingMode("sizes");
+        setPricedSizes([makeSizeRow()]);
+        setSizeColors([makeSizeColor()]);
+        if (existingSizes.length > 0) {
+          setSizes(
+            existingSizes.map((item) => ({ size: item.size || "", price: String(item.price || "") })),
+          );
+        } else {
+          setSizes([EMPTY_SIZE_ROW]);
+        }
       }
 
       const existingColors = Array.isArray(initialData.colors) ? initialData.colors : [];
@@ -703,7 +976,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
       setSelectedMaterialIds(normalizeRelationIds(initialData.materials));
       setPreview(initialData.image || null);
 
-      // CHANGED: keep saved gallery images separate so removing one is tracked correctly
+      // keep saved gallery images separate so removing one is tracked correctly
       const existing = Array.isArray(initialData.gallery) ? initialData.gallery : [];
       setExistingGallery(existing);
       setGalleryPreview(existing.map(gallerySrc));
@@ -733,14 +1006,18 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
       setFormData(DEFAULT_FORM_DATA);
       setSpecs([EMPTY_SPEC_ROW]);
       setSizes([EMPTY_SIZE_ROW]);
+      setHasSizePricing(false); // NEW
+      setSizePricingMode("sizes"); // NEW
+      setPricedSizes([makeSizeRow()]); // NEW
+      setSizeColors([makeSizeColor()]); // NEW
       setColors([EMPTY_COLOR_ROW]);
       setSelectedFrameIds([]);
       setSelectedMaterialIds([]);
       setPreview(null);
       setGalleryPreview([]);
-      setExistingGallery([]); // CHANGED
-      setRemovedGallery([]); // CHANGED
-      setRemoveMainImage(false); // CHANGED
+      setExistingGallery([]);
+      setRemovedGallery([]);
+      setRemoveMainImage(false);
       setVariants([EMPTY_VARIANT]);
     }
   }, [initialData, open]);
@@ -754,7 +1031,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     setFormData((prev) => ({ ...prev, [name]: checked }));
   };
 
-  // CHANGED: reset the input so the same file can be picked again after removing it
+  // reset the input so the same file can be picked again after removing it
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -765,7 +1042,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     setRemoveMainImage(false);
   };
 
-  // CHANGED: also tells the server to delete the saved image in edit mode
+  // also tells the server to delete the saved image in edit mode
   const handleRemoveImage = (e) => {
     e?.preventDefault?.();
     e?.stopPropagation?.();
@@ -783,7 +1060,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     e.target.value = "";
   };
 
-  // CHANGED: saved images come first in the preview, new files come after them
+  // saved images come first in the preview, new files come after them
   const handleRemoveGalleryImage = (index) => {
     const existingCount = existingGallery.length;
 
@@ -817,6 +1094,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     );
   };
 
+  // legacy sizes (Fine Art)
   const addSizeRow = () => {
     setSizes((prev) => [...prev, { size: "", price: "" }]);
   };
@@ -828,6 +1106,114 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
   const removeSizeRow = (index) => {
     setSizes((prev) =>
       prev.length === 1 ? [EMPTY_SIZE_ROW] : prev.filter((_, i) => i !== index),
+    );
+  };
+
+  // NEW: size-only rows
+  const addPricedSize = () => {
+    setPricedSizes((prev) => [...prev, makeSizeRow()]);
+  };
+
+  const updatePricedSize = (index, field, value) => {
+    setPricedSizes((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+  };
+
+  const removePricedSize = (index) => {
+    setPricedSizes((prev) =>
+      prev.length === 1 ? [makeSizeRow()] : prev.filter((_, i) => i !== index),
+    );
+  };
+
+  // NEW: colour + sizes cards
+  const addSizeColor = () => {
+    setSizeColors((prev) => [...prev, makeSizeColor()]);
+  };
+
+  const removeSizeColor = (ci) => {
+    // a removed saved colour is simply left out of the payload, so the backend deletes it
+    setSizeColors((prev) => (prev.length === 1 ? [makeSizeColor()] : prev.filter((_, i) => i !== ci)));
+  };
+
+  const updateSizeColorName = (ci, value) => {
+    setSizeColors((prev) => prev.map((c, i) => (i === ci ? { ...c, color_name: value } : c)));
+  };
+
+  const setSizeColorImage = (ci, file) => {
+    if (!file) return;
+    const nextPreview = URL.createObjectURL(file);
+    setSizeColors((prev) =>
+      prev.map((c, i) => (i === ci ? { ...c, image: file, preview: nextPreview, remove_image: false } : c)),
+    );
+  };
+
+  const clearSizeColorImage = (ci) => {
+    setSizeColors((prev) =>
+      prev.map((c, i) =>
+        i === ci ? { ...c, image: null, preview: "", remove_image: c.has_existing_image } : c,
+      ),
+    );
+  };
+
+  const addSizeColorGallery = (ci, e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (files.length === 0) return;
+    setSizeColors((prev) =>
+      prev.map((c, i) =>
+        i === ci
+          ? {
+              ...c,
+              gallery: [...c.gallery, ...files],
+              images_preview: [...c.images_preview, ...files.map((f) => URL.createObjectURL(f))],
+            }
+          : c,
+      ),
+    );
+  };
+
+  // saved images come first in the preview, new files come after them
+  const removeSizeColorGallery = (ci, imageIndex) => {
+    setSizeColors((prev) =>
+      prev.map((c, i) => {
+        if (i !== ci) return c;
+        const savedCount = c.existing_gallery.length;
+        if (imageIndex < savedCount) {
+          return {
+            ...c,
+            existing_gallery: c.existing_gallery.filter((_, j) => j !== imageIndex),
+            images_preview: c.images_preview.filter((_, j) => j !== imageIndex),
+          };
+        }
+        const newIndex = imageIndex - savedCount;
+        return {
+          ...c,
+          gallery: c.gallery.filter((_, j) => j !== newIndex),
+          images_preview: c.images_preview.filter((_, j) => j !== imageIndex),
+        };
+      }),
+    );
+  };
+
+  const addSizeColorSize = (ci) => {
+    setSizeColors((prev) => prev.map((c, i) => (i === ci ? { ...c, sizes: [...c.sizes, makeSizeRow()] } : c)));
+  };
+
+  const updateSizeColorSize = (ci, si, field, value) => {
+    setSizeColors((prev) =>
+      prev.map((c, i) =>
+        i === ci
+          ? { ...c, sizes: c.sizes.map((s, j) => (j === si ? { ...s, [field]: value } : s)) }
+          : c,
+      ),
+    );
+  };
+
+  const removeSizeColorSize = (ci, si) => {
+    setSizeColors((prev) =>
+      prev.map((c, i) => {
+        if (i !== ci) return c;
+        return { ...c, sizes: c.sizes.length === 1 ? [makeSizeRow()] : c.sizes.filter((_, j) => j !== si) };
+      }),
     );
   };
 
@@ -968,8 +1354,22 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     [colors],
   );
 
+  // NEW: base product price = smallest size price (across all colours in colour mode)
+  const derivedBasePrice = useMemo(() => {
+    const rows = sizePricingMode === "colors" ? sizeColors.flatMap((c) => c.sizes) : pricedSizes;
+    const prices = rows.map((r) => Number(r.price)).filter((n) => n > 0);
+    return prices.length ? Math.min(...prices) : "";
+  }, [sizePricingMode, sizeColors, pricedSizes]);
+
   const handleSubmit = async () => {
-    if (!formData.name || !formData.price) {
+    // Determine category characteristics (whole-word match, so "Smart Watches" is not Fine Art)
+    const selectedCategoryObj = categories.find((c) => String(c.id) === String(formData.category));
+    const catName = selectedCategoryObj?.name?.toLowerCase() || "";
+    const isArt = /\bart(s|work)?\b/.test(catName);
+    const useSizePricing = !isArt && hasSizePricing; // size pricing is for Variant products only
+
+    // base price comes from the sizes when size pricing is on
+    if (!formData.name || (!useSizePricing && !formData.price)) {
       toast.error("Name and Price are required");
       return;
     }
@@ -984,16 +1384,57 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
       return;
     }
 
-    // Determine category characteristics (whole-word match, so "Smart Watches" is not Fine Art)
-    const selectedCategoryObj = categories.find((c) => String(c.id) === String(formData.category));
-    const catName = selectedCategoryObj?.name?.toLowerCase() || "";
-    const isArt = /\bart(s|work)?\b/.test(catName);
-
     const validVariants = variants.filter((v) => v.sku.trim() !== "");
 
-    if (!isArt && validVariants.length === 0) {
+    // size-priced products have no SKU variants
+    if (!isArt && !useSizePricing && validVariants.length === 0) {
       toast.error("Please add at least one product variant");
       return;
+    }
+
+    // NEW: validate and build the size-pricing payload
+    let sizeOnlyPayload = [];
+    let colorPricingPayload = [];
+    let colorPricingRows = []; // same order as colorPricingPayload, used to attach images by index
+    let basePrice = Number(formData.price);
+
+    if (useSizePricing) {
+      if (sizePricingMode === "sizes") {
+        const result = buildSizePayload(pricedSizes);
+        if (result.error) { toast.error(result.error); return; }
+        sizeOnlyPayload = result.payload;
+        basePrice = Math.min(...sizeOnlyPayload.map((s) => s.price));
+      } else {
+        const rows = sizeColors.filter((c) => !isBlankSizeColor(c));
+        if (rows.length === 0) {
+          toast.error("Add at least one colour");
+          return;
+        }
+
+        const seenColors = new Set();
+        const allPrices = [];
+        for (const c of rows) {
+          const name = c.color_name.trim();
+          if (!name) { toast.error("Every colour needs a name"); return; }
+          const colorKey = name.toLowerCase();
+          if (seenColors.has(colorKey)) { toast.error(`Colour "${name}" is added twice`); return; }
+          seenColors.add(colorKey);
+
+          const result = buildSizePayload(c.sizes, ` (${name})`);
+          if (result.error) { toast.error(result.error); return; }
+          result.payload.forEach((s) => allPrices.push(s.price));
+
+          colorPricingPayload.push({
+            ...(c.id ? { id: c.id } : {}), // saved colour keeps its id, new colour has none
+            color_name: name,
+            existing_gallery_image_ids: c.existing_gallery.map((g) => g.id), // saved gallery images to keep
+            ...(c.remove_image && !c.image ? { remove_image: true } : {}),
+            sizes: result.payload,
+          });
+          colorPricingRows.push(c);
+        }
+        basePrice = Math.min(...allPrices);
+      }
     }
 
     setLoading(true);
@@ -1003,7 +1444,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     if (formData.subcategory) data.append("subcategory", formData.subcategory);
     if (formData.brand) data.append("brand", formData.brand);
     if (formData.supplier) data.append("supplier", formData.supplier);
-    data.append("price", Number(formData.price));
+    data.append("price", basePrice);
     data.append("description", formData.description);
     data.append("specification", JSON.stringify(specificationPayload));
 
@@ -1021,6 +1462,19 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
           data.append(`color_image_${index}`, color.image);
         }
       });
+    } else if (useSizePricing) {
+      // NEW: size-pricing product. Size-only sends sizes and colors = []; colour mode sends sizes = [] and colors.
+      data.append("has_size_pricing", "true");
+      data.append("sizes", JSON.stringify(sizePricingMode === "sizes" ? sizeOnlyPayload : []));
+      data.append("colors", JSON.stringify(sizePricingMode === "colors" ? colorPricingPayload : []));
+
+      if (sizePricingMode === "colors") {
+        // the number in the key is the colour's position in the colors JSON array
+        colorPricingRows.forEach((c, index) => {
+          if (c.image) data.append(`color_image_${index}`, c.image);
+          c.gallery.forEach((file) => data.append(`color_images_${index}`, file));
+        });
+      }
     } else {
       const payloadVariants = validVariants.map((v) => {
         const payloadV = {
@@ -1060,7 +1514,7 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     if (formData.image) data.append("image", formData.image);
     formData.gallery.forEach((file) => data.append("images", file));
 
-    // CHANGED: edit mode only. Tell the server which saved images were removed.
+    // edit mode only. Tell the server which saved images were removed.
     // A backend that does not know these fields simply ignores them.
     if (initialData) {
       if (removeMainImage && !formData.image) data.append("remove_image", "true");
@@ -1104,6 +1558,28 @@ export default function useProductForm({ open, onClose, onSuccess, initialData }
     loading,
     galleryPreview,
     variants,
+    // NEW: size-based pricing
+    hasSizePricing,
+    setHasSizePricing,
+    sizePricingMode,
+    setSizePricingMode,
+    sizePricingLocked,
+    derivedBasePrice,
+    pricedSizes,
+    addPricedSize,
+    updatePricedSize,
+    removePricedSize,
+    sizeColors,
+    addSizeColor,
+    removeSizeColor,
+    updateSizeColorName,
+    setSizeColorImage,
+    clearSizeColorImage,
+    addSizeColorGallery,
+    removeSizeColorGallery,
+    addSizeColorSize,
+    updateSizeColorSize,
+    removeSizeColorSize,
     handleChange,
     handleToggleFlag,
     handleImageChange,
