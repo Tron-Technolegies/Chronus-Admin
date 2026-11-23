@@ -2044,7 +2044,9 @@ export default function ProductFormPage() {
   const useSizePricing = showSizePricingToggle && hasSizePricing;
 
   // legacy sizes section is hidden while the new size-pricing editor is on
-  const showSizes = formData.category !== "" && !useSizePricing;
+  // const showSizes = formData.category !== "" && !useSizePricing;
+  // legacy sizes section is only for Fine Art products
+  const showSizes = isArt;
 
 
   return (
@@ -2353,7 +2355,7 @@ export default function ProductFormPage() {
                   <Box>
                     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
                       <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#333" }}>Colours</Typography>
-                      <Button
+                      {/* <Button
                         size="small"
                         variant="outlined"
                         onClick={addSizeColor}
@@ -2367,7 +2369,7 @@ export default function ProductFormPage() {
                         }}
                       >
                         + Add Colour
-                      </Button>
+                      </Button> */}
                     </Box>
 
                     {sizeColors.map((color, ci) => (
@@ -2488,6 +2490,21 @@ export default function ProductFormPage() {
                     ))}
                   </Box>
                 )}
+                <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={addSizeColor}
+                        sx={{
+                          textTransform: "none",
+                          borderColor: "#3D1613",
+                          color: "#3D1613",
+                          fontSize: "0.75rem",
+                          px: 1.5,
+                          "&:hover": { bgcolor: "#f9eded", borderColor: "#3D1613" },
+                        }}
+                      >
+                        + Add Colour
+                      </Button>
               </Box>
             )}
           </Box>
@@ -2668,7 +2685,7 @@ export default function ProductFormPage() {
           <Box sx={{ mb: 2 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#333" }}>Product Variants</Typography>
-              <Button
+              {/* <Button
                 size="small"
                 variant="outlined"
                 onClick={addVariant}
@@ -2682,7 +2699,7 @@ export default function ProductFormPage() {
                 }}
               >
                 + Add Variant
-              </Button>
+              </Button> */}
             </Box>
 
             {variants.map((variant, vIndex) => (
@@ -2810,6 +2827,21 @@ export default function ProductFormPage() {
                 </Box>
               </Box>
             ))}
+            <Button
+                size="small"
+                variant="outlined"
+                onClick={addVariant}
+                sx={{
+                  textTransform: "none",
+                  borderColor: "#3D1613",
+                  color: "#3D1613",
+                  fontSize: "0.75rem",
+                  px: 1.5,
+                  "&:hover": { bgcolor: "#f9eded", borderColor: "#3D1613" },
+                }}
+              >
+                + Add Variant
+              </Button>
           </Box>
         )}
 
