@@ -3,7 +3,7 @@ import SupplierTable from "../components/Suppliers/SupplierTable";
 import { Button } from "@mui/material";
 import { IoAdd } from "react-icons/io5";
 import SupplierModal from "../components/Suppliers/SupplierModal";
-import { isSuperAdmin } from "../utils/auth";
+import { canManageStore, isSuperAdmin } from "../utils/auth";
 
 export default function Suppliers() {
   const [open, setOpen] = useState(false);
@@ -22,7 +22,7 @@ export default function Suppliers() {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">Suppliers</h2>
-        {isSuperAdmin() && (
+        {canManageStore() && (
           <Button
             variant="contained"
             startIcon={<IoAdd />}

@@ -21,7 +21,7 @@ import { deleteCoupon, getCoupons } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
 import { getApiErrorMessage } from "../../utils/apiError";
-import { isSuperAdmin } from "../../utils/auth";
+import { canManageStore, isSuperAdmin } from "../../utils/auth";
 
 export default function CouponTable({ onEdit }) {
   const [rows, setRows] = useState([]);
@@ -72,7 +72,8 @@ export default function CouponTable({ onEdit }) {
               <TableCell>Code</TableCell>
               <TableCell>Discount</TableCell>
               <TableCell>Expiration</TableCell>
-              {isSuperAdmin() && <TableCell align="right">Actions</TableCell>}
+              {/* {isSuperAdmin() && <TableCell align="right">Actions</TableCell>} */}
+              {canManageStore() && <TableCell align="right">Actions</TableCell>}
             </TableRow>
           </TableHead>
 
@@ -82,7 +83,7 @@ export default function CouponTable({ onEdit }) {
                 <TableCell>{row.code}</TableCell>
                 <TableCell>AED {Number(row.discount || 0).toFixed(2)}</TableCell>
                 <TableCell>{row.expiration_date}</TableCell>
-                {isSuperAdmin() && (
+                {canManageStore() && (
                   <TableCell align="right">
                     <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
                       <Tooltip title="Edit Coupon">

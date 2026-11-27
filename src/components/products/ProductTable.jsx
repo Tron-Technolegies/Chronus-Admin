@@ -684,11 +684,10 @@ import {
 } from "@mui/material";
 import { FiEdit, FiTrash2, FiSearch } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
 import useProductsTable from "../../hooks/products/useProductsTable";
-import { isSuperAdmin } from "../../utils/auth";
+import { canManageStore, isSuperAdmin } from "../../utils/auth";
 
 const LOW_STOCK_LIMIT = 10;
 const VISIBLE_VARIANTS = 3; // how many variants show before "Show all"
@@ -1016,7 +1015,7 @@ export default function ProductTable({ onEdit, filters = {}, refreshKey }) {
                         </IconButton>
                       </Tooltip>
 
-                      {isSuperAdmin() && (
+                      {canManageStore() && (
                         <Tooltip title="Delete Product">
                           <IconButton
                             size="small"

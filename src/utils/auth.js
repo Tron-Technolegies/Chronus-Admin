@@ -118,3 +118,7 @@ export const isAuthenticated = () => {
   if (!valid) clearAuthTokens();
   return valid;
 };
+
+
+// who can delete products: super admins and store managers
+export const canManageStore = () => isSuperAdmin() || isStoreManager();

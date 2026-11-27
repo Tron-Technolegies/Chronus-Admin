@@ -21,7 +21,8 @@ import { deleteSupplier, getSuppliers } from "../../api/api";
 import Loader from "../Loader";
 import ConfirmModal from "../ConfirmModal";
 import { getApiErrorMessage } from "../../utils/apiError";
-import { isSuperAdmin } from "../../utils/auth";
+// import { isSuperAdmin } from "../../utils/auth";
+import { canManageStore } from "../../utils/auth";
 
 export default function SupplierTable({ onEdit }) {
   const [rows, setRows] = useState([]);
@@ -75,7 +76,8 @@ export default function SupplierTable({ onEdit }) {
               <TableCell>Phone</TableCell>
               <TableCell>WeChat ID</TableCell>
               <TableCell>Country</TableCell>
-              {isSuperAdmin() && <TableCell align="right">Actions</TableCell>}
+              {/* {isSuperAdmin() && <TableCell align="right">Actions</TableCell>} */}
+              {canManageStore() && <TableCell align="right">Actions</TableCell>}
             </TableRow>
           </TableHead>
 
@@ -88,7 +90,7 @@ export default function SupplierTable({ onEdit }) {
                 <TableCell>{row.phone}</TableCell>
                 <TableCell>{row.wechat_id || "-"}</TableCell>
                 <TableCell>{row.country || "-"}</TableCell>
-                {isSuperAdmin() && (
+                {canManageStore() && (
                   <TableCell align="right">
                     <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
                       <Tooltip title="Edit Supplier">
