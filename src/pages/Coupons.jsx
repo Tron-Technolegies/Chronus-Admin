@@ -3,7 +3,7 @@ import CouponTable from "../components/Coupons/CouponTable";
 import { Button } from "@mui/material";
 import { IoAdd } from "react-icons/io5";
 import CouponModal from "../components/Coupons/CouponModal";
-import { canManageStore, isSuperAdmin } from "../utils/auth";
+import { isSuperAdmin } from "../utils/auth";
 
 export default function Coupons() {
   const [open, setOpen] = useState(false);
@@ -22,7 +22,7 @@ export default function Coupons() {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">Coupons</h2>
-        {canManageStore() && (
+        {isSuperAdmin() && (
           <Button
             variant="contained"
             startIcon={<IoAdd />}
